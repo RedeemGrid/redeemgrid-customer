@@ -1,0 +1,50 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brand-primary: #9333ea; /* purple-600 */
+  --color-brand-secondary: #4f46e5; /* indigo-600 */
+  
+  --color-bg-start: #1e1b4b; /* indigo-950 */
+  --color-bg-mid: #3b0764; /* purple-950 */
+  --color-bg-end: #020617; /* slate-950 */
+}
+
+@layer base {
+  body {
+    @apply bg-bg-end text-white antialiased;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+
+  /* Sleek scrollbar for glass containers */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  * {
+    @apply border-white/5;
+  }
+}
+
+@layer utilities {
+  @keyframes float {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    33% { transform: translate(10px, -20px) scale(1.05); }
+    66% { transform: translate(-15px, 10px) scale(0.95); }
+  }
+
+  .animate-blob {
+    animation: float 20s ease-in-out infinite;
+  }
+
+  .animation-delay-2000 {
+    animation-delay: 2s;
+  }
+
+  .animation-delay-4000 {
+    animation-delay: 4s;
+  }
+}

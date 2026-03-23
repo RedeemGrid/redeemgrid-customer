@@ -1,0 +1,38 @@
+# REDEEMGRID ARCHITECTURAL RULES
+You are a Senior Fullstack Engineer building "RedeemGrid", a Multi-tenant SaaS for local deals.
+
+## TECH STACK
+- Frontend: React + Vite + Tailwind CSS.
+- Backend/DB: Supabase (PostgreSQL + PostGIS).
+- Auth: Google OAuth via Supabase.
+
+## DATABASE ARCHITECTURE (ALREADY DEPLOYED)
+- `tenants`: Stores businesses.
+- `profiles`: Linked to `auth.users` via trigger. Roles: `super_admin`, `merchant_admin`, `end_user`.
+- `branches`: Locations using `geography(POINT)`.
+- `deals`: Offers linked to `tenants`.
+- `coupons`: QR-based transactions (pending, redeemed, expired).
+
+## CRITICAL INSTRUCTIONS
+1. **Geolocation First**: Use the `get_nearby_branches` RPC function to fetch deals based on user coordinates.
+2. **Multi-tenancy**: Always filter data by `tenant_id` for merchant roles.
+3. **Security**: Use Row Level Security (RLS) concepts. Do not bypass security in the frontend.
+4. **Clean Code**: Use functional components, Tailwind for styling, and Lucide-React for icons.
+5. **PWA**: Ensure the app feels like a native mobile experience (Bottom navigation, touch-friendly).
+
+## CURRENT TASK
+Initialize the project structure:
+1. Setup `src/lib/supabase.js` using environment variables.
+2. Create a `Layout.jsx` with a mobile-first bottom navigation.
+3. Implement a `Login.jsx` page using Google OAuth.
+
+## DATABASE SCHEMA REFERENCE (SQL)
+- `tenants` (id UUID, name TEXT, slug TEXT, logo_url TEXT)
+- `profiles` (id UUID PK references auth.users, full_name TEXT, role TEXT, tenant_id UUID references tenants)
+- `branches` (id UUID, tenant_id UUID, name TEXT, location GEOGRAPHY(POINT))
+- `deals` (id UUID, tenant_id UUID, title TEXT, description TEXT, discount_value DECIMAL, discount_type TEXT, start_date TIMESTAMPTZ, end_date TIMESTAMPTZ, image_url TEXT, is_active BOOLEAN)
+- `coupons` (id UUID, deal_id UUID, tenant_id UUID, user_id UUID, qr_code TEXT UNIQUE, status TEXT, redeemed_at TIMESTAMPTZ, branch_redeemed_id UUID)
+
+## RPC FUNCTIONS CONTRACTS
+- `get_nearby_branches(lat float, lng float, radius_meters float)` -> returns JSONB[] {branch_name, deal_title, distance, deal_id}
+- `redeem_coupon(p_qr_code TEXT, p_branch_id UUID, p_tenant_id UUID)` -> returns JSONB {success: bool, message: text, offer_details: jsonb}
