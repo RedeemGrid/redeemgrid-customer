@@ -58,8 +58,14 @@ export const AuthProvider = ({ children }) => {
   };
 
   const loginWithGoogle = async () => {
+    // Determine redirect URL: Use current location origin + Vite base path
+    const redirectTo = window.location.origin + import.meta.env.BASE_URL;
+    
     return supabase.auth.signInWithOAuth({
       provider: 'google',
+      options: {
+        redirectTo,
+      }
     });
   };
 
