@@ -38,7 +38,11 @@
     "offer": "Offer",
     "saveBig": "Save Big",
     "claimDeal": "Claim Deal",
-    "alreadyClaimed": "You've already claimed this! Check your coupons."
+    "alreadyClaimed": "You've already claimed this! Check your coupons.",
+    "viewOffer": "View Offer",
+    "viewDetails": "View Details",
+    "expires": "Expires:",
+    "viewCoupon": "View Coupon"
   },
   "login": {
     "welcome": "Welcome to",
@@ -52,7 +56,10 @@
     "scanToRedeem": "Scan to redeem",
     "scanInstruction": "Point the camera at the store's QR code",
     "poweredBy": "Powered by RedeemGrid Scanner Engine",
-    "codeDetected": "Code detected:"
+    "codeDetected": "Code detected:",
+    "processingCoupon": "Processing\nCoupon...",
+    "offerRedeemedSuccess": "Offer successfully redeemed!",
+    "errorProcessingScan": "Error processing scan"
   },
   "settings": {
     "title": "Settings",
@@ -138,7 +145,23 @@
     "redemptionPoints": "Redemption Points",
     "viewOnMaps": "Open Now • View on Maps",
     "discovering": "Discovering nearby locations...",
-    "close": "Done & Close"
+    "close": "Done & Close",
+    "scanStoreQR": "Scan Store QR",
+    "showMyQR": "Show My QR",
+    "hideMyQR": "Hide My QR"
+  },
+  "offerModal": {
+    "claimed": "Claimed",
+    "status": "Status",
+    "active": "Active",
+    "expires": "Expires",
+    "applicableBranches": "Applicable Branches",
+    "viewOnMap": "View on maps",
+    "loadingBranches": "Loading branches...",
+    "close": "Close",
+    "distanceAway": "{{val}}km away",
+    "secureTokenActive": "Secure token active",
+    "couponCode": "Coupon Code"
   },
   "profile": {
     "saveFailed": "Failed to save profile:",

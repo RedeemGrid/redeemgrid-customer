@@ -2,9 +2,10 @@ import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { QRCodeSVG } from 'qrcode.react';
-import { Ticket, Clock, CheckCircle, ChevronLeft, X, AlertCircle, MapPin, Navigation } from 'lucide-react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Ticket, Clock, CheckCircle, ChevronLeft, X, AlertCircle, MapPin, Navigation, ScanLine, QrCode } from 'lucide-react';
+import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import OfferDetailModal from '../components/OfferDetailModal';
 
 export default function MyCoupons() {
   const { t } = useTranslation();
@@ -18,6 +19,8 @@ export default function MyCoupons() {
   const [branches, setBranches] = useState([]);
   const [categories, setCategories] = useState(['All']);
   const [activeCategory, setActiveCategory] = useState('All');
+  const [showQrCode, setShowQrCode] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (user) {
@@ -74,6 +77,16 @@ export default function MyCoupons() {
 
       const uniqueCats = ['All', ...new Set(enrichedCoupons.map(c => c.categoryName))];
       setCategories(uniqueCats);
+
+      const targetId = searchParams.get('id');
+      if (targetId) {
+        const targetCoupon = enrichedCoupons.find(c => c.id === targetId);
+        if (targetCoupon) {
+          setSelectedCoupon(targetCoupon);
+          searchParams.delete('id');
+          setSearchParams(searchParams, { replace: true });
+        }
+      }
     } catch (err) {
       console.error('Error fetching coupons:', err);
     } finally {
@@ -216,7 +229,10 @@ export default function MyCoupons() {
           filteredCoupons.map((coupon) => (
             <div 
               key={coupon.id}
-              onClick={() => setSelectedCoupon(coupon)}
+              onClick={() => {
+                setSelectedCoupon(coupon);
+                setShowQrCode(false);
+              }}
               className={`bg-white/10 backdrop-blur-lg rounded-[32px] shadow-xl border border-white/20 overflow-hidden active:scale-[0.97] transition-all duration-300 cursor-pointer group ${
                 currentFilter !== 'active' ? 'grayscale opacity-60' : ''
               }`}
@@ -273,118 +289,41 @@ export default function MyCoupons() {
 
       {/* Modal / Detail Overlay */}
       {selectedCoupon && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-bg-end/60 backdrop-blur-xl animate-in fade-in duration-500 overflow-hidden">
-          {/* Backdrop Glows */}
-          <div className="absolute top-1/4 right-1/4 w-96 h-96 bg-brand-primary/20 rounded-full blur-[120px] animate-pulse"></div>
-          <div className="absolute bottom-1/4 left-1/4 w-96 h-96 bg-brand-secondary/20 rounded-full blur-[120px] animate-pulse"></div>
-
-          <div className="bg-white/10 backdrop-blur-3xl w-full max-w-lg border-t border-white/20 shadow-[0_-20px_50px_-10px_rgba(0,0,0,0.5)] animate-in slide-in-from-bottom-full duration-700 max-h-[92vh] flex flex-col relative isolate transform-gpu">
-            {/* Grab Handle */}
-            <div className="w-12 h-1.5 bg-white/20 rounded-full mx-auto mt-6 mb-2"></div>
-            
-            <div className="p-8 relative flex-1 overflow-y-auto scrollbar-hide">
-              <button 
-                onClick={() => setSelectedCoupon(null)}
-                className="absolute right-8 top-8 z-10 p-2.5 bg-white/10 text-white/60 hover:text-white hover:bg-white/20 rounded-full transition-all border border-white/10"
-              >
-                <X size={22} />
-              </button>
-              
-                    {/* Header Info */}
-                    <div className="flex items-center gap-5 mb-8 pt-4">
-                       <div className="w-16 h-16 bg-white rounded-3xl shadow-xl flex items-center justify-center p-2">
-                          <img src={selectedCoupon.tenants?.logo_url} alt="Logo" className="max-w-full max-h-full object-contain" />
-                       </div>
-                       <div>
-                          <p className="text-[11px] text-white/40 font-black uppercase tracking-[0.2em] mb-1">{selectedCoupon.tenants?.name}</p>
-                          <h3 className="text-2xl font-black text-white leading-tight">{selectedCoupon.deals?.title}</h3>
-                       </div>
-                    </div>
-
-                     <div className="grid grid-cols-2 gap-4 mb-10">
-                       <div className="bg-white/5 backdrop-blur-md p-5 rounded-[32px] border border-white/10 shadow-inner">
-                          <p className="text-[9px] text-white/30 font-black uppercase tracking-[0.2em] mb-2 ml-1">{t('coupons.claimedOn')}</p>
-                          <p className="text-sm font-black text-white ml-1">{new Date(selectedCoupon.created_at).toLocaleDateString()}</p>
-                       </div>
-                       <div className={`p-5 rounded-[32px] border backdrop-blur-md shadow-inner ${getTimeRemaining(selectedCoupon.deals?.end_date)?.includes('h') ? 'bg-orange-500/10 border-orange-500/20' : 'bg-white/5 border-white/10'}`}>
-                          <p className="text-[9px] text-white/30 font-black uppercase tracking-[0.2em] mb-2 ml-1">{t('coupons.validUntil')}</p>
-                          <p className={`text-sm font-black ml-1 ${getTimeRemaining(selectedCoupon.deals?.end_date)?.includes('h') ? 'text-orange-400' : 'text-white'}`}>
-                             {new Date(selectedCoupon.deals?.end_date).toLocaleDateString()}
-                             {getTimeRemaining(selectedCoupon.deals?.end_date) && <span className="block text-[10px] font-black uppercase mt-1 opacity-60 tracking-wider">⚡ {getTimeRemaining(selectedCoupon.deals?.end_date)}</span>}
-                          </p>
-                       </div>
-                    </div>
-                    
-                    <p className="text-white/70 text-base leading-relaxed mb-10 px-1">{selectedCoupon.deals?.description}</p>
-                    
-                    {currentFilter === 'active' && (
-                      <div className="bg-white/5 backdrop-blur-2xl p-10 rounded-[48px] text-center border border-white/10 shadow-3xl mb-10 relative overflow-hidden group">
-                        <div className="absolute top-0 inset-x-0 h-1.5 bg-gradient-to-r from-brand-primary via-brand-secondary to-brand-primary opacity-30"></div>
-                        
-                        <div className="relative inline-block group">
-                          {/* Animated Border/Ring */}
-                          <div className="absolute -inset-4 bg-gradient-to-tr from-brand-primary to-brand-secondary rounded-[40px] opacity-20 blur-lg group-hover:opacity-40 transition-opacity duration-500"></div>
-                          
-                          <div className="relative p-6 bg-white rounded-[36px] shadow-2xl">
-                            <QRCodeSVG 
-                              value={selectedCoupon.qr_code} 
-                              size={180} 
-                              level="H"
-                              className="mx-auto"
-                              includeMargin={false}
-                            />
-                          </div>
-                        </div>
-
-                        <div className="mt-10 flex flex-col items-center">
-                          <code className="bg-bg-end text-white/90 px-8 py-3.5 rounded-[20px] text-lg tracking-[0.3em] font-black border border-white/10 shadow-inner ring-1 ring-white/5">
-                            {selectedCoupon.qr_code}
-                          </code>
-                          <div className="mt-8 flex items-center gap-2 bg-green-500/5 border border-green-500/20 px-5 py-2.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] text-green-400 animate-pulse">
-                            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                            {t('coupons.secureTokenActive')}
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {currentFilter !== 'expired' && (
-                      <div className="space-y-5">
-                        <h4 className="font-black text-white text-sm uppercase tracking-[0.2em] flex items-center gap-3">
-                          <MapPin size={20} className="text-brand-primary" />
-                          {t('coupons.redemptionPoints')}
-                        </h4>
-                        <div className="grid gap-3">
-                          {branches.length > 0 ? branches.map(branch => (
-                            <div key={branch.id} className="bg-white/5 p-5 rounded-3xl flex items-center justify-between group hover:bg-white/10 transition-all border border-white/5 hover:border-white/10">
-                              <div>
-                                <p className="font-bold text-white text-base">{branch.name}</p>
-                                <p className="text-xs text-white/40 font-medium mt-1">{t('coupons.viewOnMaps')}</p>
-                              </div>
-                              <button 
-                                onClick={() => openInMaps(branch)}
-                                className="bg-white text-brand-secondary p-3.5 rounded-2xl hover:opacity-90 active:scale-90 transition-all shadow-xl"
-                              >
-                                <Navigation size={20} fill="currentColor" />
-                              </button>
-                            </div>
-                          )) : (
-                            <p className="text-xs text-white/40 italic px-1">{t('coupons.discovering')}</p>
-                          )}
-                        </div>
-                      </div>
-                    )}
-            </div>
-            <div className="p-8 bg-white/5 border-t border-white/10">
-              <button 
-                onClick={() => setSelectedCoupon(null)}
-                className="w-full bg-gradient-to-r from-brand-primary to-brand-secondary text-white font-black py-5 rounded-[28px] hover:opacity-90 transition-all active:scale-[0.98] shadow-xl shadow-brand-primary/10 flex items-center justify-center gap-3 text-xs uppercase tracking-[0.2em]"
-              >
-                {t('coupons.close')}
-              </button>
-            </div>
-          </div>
-        </div>
+        <OfferDetailModal
+          isOpen={!!selectedCoupon}
+          onClose={() => setSelectedCoupon(null)}
+          isCoupon={true}
+          tenantName={selectedCoupon.tenants?.name}
+          tenantLogo={selectedCoupon.tenants?.logo_url}
+          title={selectedCoupon.deals?.title}
+          description={selectedCoupon.deals?.description}
+          imageUrl={selectedCoupon.deals?.image_url}
+          endDate={selectedCoupon.deals?.end_date}
+          claimedDate={selectedCoupon.created_at}
+          qrCode={selectedCoupon.qr_code}
+          showQrCode={showQrCode}
+          branches={branches}
+          actionButtons={
+            currentFilter === 'active' 
+            ? [
+                {
+                  id: 'show-qr-btn',
+                  text: showQrCode ? t('coupons.hideMyQR') : t('coupons.showMyQR'),
+                  icon: QrCode,
+                  onClick: () => setShowQrCode(!showQrCode),
+                  primary: false
+                },
+                {
+                  id: 'scan-qr-btn',
+                  text: t('coupons.scanStoreQR'),
+                  icon: ScanLine,
+                  onClick: () => navigate(`/scanner?deal_id=${selectedCoupon.deal_id}`),
+                  primary: true
+                }
+              ] 
+            : []
+          }
+        />
       )}
     </div>
   );

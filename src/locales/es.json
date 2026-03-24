@@ -38,7 +38,11 @@
     "offer": "Oferta",
     "saveBig": "Gran Ahorro",
     "claimDeal": "Obtener",
-    "alreadyClaimed": "¡Ya reclamaste esta oferta! Revisa tus cupones."
+    "alreadyClaimed": "¡Ya reclamaste esta oferta! Revisa tus cupones.",
+    "viewOffer": "Ver Oferta",
+    "viewDetails": "Ver Detalles",
+    "expires": "Vence:",
+    "viewCoupon": "Ver Cupón"
   },
   "login": {
     "welcome": "Bienvenido a",
@@ -52,7 +56,10 @@
     "scanToRedeem": "Escanea para canjear",
     "scanInstruction": "Apunta la cámara al código QR de la tienda",
     "poweredBy": "Desarrollado por RedeemGrid Scanner Engine",
-    "codeDetected": "Código detectado:"
+    "codeDetected": "Código detectado:",
+    "processingCoupon": "Procesando\nCupón...",
+    "offerRedeemedSuccess": "¡Oferta canjeada exitosamente!",
+    "errorProcessingScan": "Error al procesar escaneo"
   },
   "settings": {
     "title": "Ajustes",
@@ -138,7 +145,23 @@
     "redemptionPoints": "Puntos de Canje",
     "viewOnMaps": "Abierto Ahora • Ver en Maps",
     "discovering": "Descubriendo ubicaciones cercanas...",
-    "close": "Hecho y Cerrar"
+    "close": "Hecho y Cerrar",
+    "scanStoreQR": "Escanear QR del Local",
+    "showMyQR": "Mostrar Mi QR",
+    "hideMyQR": "Ocultar Mi QR"
+  },
+  "offerModal": {
+    "claimed": "Reclamado",
+    "status": "Estatus",
+    "active": "Activa",
+    "expires": "Vence",
+    "applicableBranches": "Sucursales Aplicables",
+    "viewOnMap": "Ver en mapas",
+    "loadingBranches": "Cargando sucursales...",
+    "close": "Cerrar",
+    "distanceAway": "A {{val}}km de ti",
+    "secureTokenActive": "Token de seguridad activo",
+    "couponCode": "Código del Cupón"
   },
   "profile": {
     "saveFailed": "Fallo al guardar perfil:",

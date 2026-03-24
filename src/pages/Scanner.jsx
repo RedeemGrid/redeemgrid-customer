@@ -1,14 +1,47 @@
 import { useEffect, useState, useRef } from 'react';
 import { Html5Qrcode } from 'html5-qrcode';
-import { Camera, ChevronLeft, Zap, Info } from 'lucide-react';
+import { Camera, ChevronLeft, Zap, Info, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { supabase } from '../lib/supabase';
+import { useAuth } from '../context/AuthContext';
 
 export default function Scanner() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [scanResult, setScanResult] = useState(null);
+  const [isProcessing, setIsProcessing] = useState(false);
   const scannerRef = useRef(null);
+  
+  // Use a ref to persist isProcessing inside the html5QrCode callback
+  const processingRef = useRef(false);
+  processingRef.current = isProcessing;
+
+  const processScan = async (scannedData) => {
+    setIsProcessing(true);
+    try {
+      const { data, error } = await supabase.rpc('user_redeem_offer', {
+        p_user_id: user?.id,
+        p_deal_id: scannedData
+      });
+
+      if (error) {
+        throw new Error(error.message || t('scanner.errorProcessingScan'));
+      }
+
+      alert(t('scanner.offerRedeemedSuccess'));
+      navigate('/coupons?filter=redeemed');
+    } catch (err) {
+      console.error(err);
+      alert(err.message || t('scanner.errorProcessingScan'));
+      // Reset scan so they can try again or go back
+      setScanResult(null);
+      navigate(-1);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
 
   useEffect(() => {
     // Initialize the headless scanner to avoid English UI injection
@@ -22,13 +55,15 @@ export default function Scanner() {
         aspectRatio: 1.0,
       },
       (result) => {
+        if (processingRef.current) return;
         setScanResult(result);
-        alert(`${t('scanner.codeDetected')} ${result}`);
         
         // Stop scanning after success
         if (html5QrCode.isScanning) {
           html5QrCode.stop().catch(console.error);
         }
+
+        processScan(result);
       },
       (error) => {
         // Silently ignore noise
@@ -62,19 +97,28 @@ export default function Scanner() {
       </div>
 
       {/* Scanner Container */}
-      <div className="w-full max-w-sm aspect-square bg-black/40 backdrop-blur-xl border-2 border-dashed border-white/20 rounded-[48px] overflow-hidden relative shadow-2xl">
-        <div id="reader" className="w-full h-full"></div>
-        
-        {/* Viewfinder Overlay Mask (CSS) */}
-        {!scanResult && (
-          <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-            <div className="w-64 h-64 border-2 border-brand-primary/50 rounded-3xl relative">
-              <div className="absolute -top-1 -left-1 w-8 h-8 border-t-4 border-l-4 border-brand-primary rounded-tl-xl"></div>
-              <div className="absolute -top-1 -right-1 w-8 h-8 border-t-4 border-r-4 border-brand-primary rounded-tr-xl"></div>
-              <div className="absolute -bottom-1 -left-1 w-8 h-8 border-b-4 border-l-4 border-brand-primary rounded-bl-xl"></div>
-              <div className="absolute -bottom-1 -right-1 w-8 h-8 border-b-4 border-r-4 border-brand-primary rounded-br-xl"></div>
-            </div>
+      <div className="w-full max-w-sm aspect-square bg-black/40 backdrop-blur-xl border-2 border-dashed border-white/20 rounded-[48px] overflow-hidden relative shadow-2xl flex items-center justify-center">
+        {isProcessing ? (
+          <div className="flex flex-col items-center gap-4 animate-in fade-in zoom-in">
+            <Loader2 size={48} className="text-brand-primary animate-spin" />
+            <p className="text-white font-black uppercase tracking-widest text-sm text-center whitespace-pre-wrap">{t('scanner.processingCoupon')}</p>
           </div>
+        ) : (
+          <>
+            <div id="reader" className="w-full h-full absolute inset-0"></div>
+            
+            {/* Viewfinder Overlay Mask (CSS) */}
+            {!scanResult && (
+              <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+                <div className="w-64 h-64 border-2 border-brand-primary/50 relative">
+                  <div className="absolute -top-1 -left-1 w-8 h-8 border-t-4 border-l-4 border-brand-primary"></div>
+                  <div className="absolute -top-1 -right-1 w-8 h-8 border-t-4 border-r-4 border-brand-primary"></div>
+                  <div className="absolute -bottom-1 -left-1 w-8 h-8 border-b-4 border-l-4 border-brand-primary"></div>
+                  <div className="absolute -bottom-1 -right-1 w-8 h-8 border-b-4 border-r-4 border-brand-primary"></div>
+                </div>
+              </div>
+            )}
+          </>
         )}
       </div>
 

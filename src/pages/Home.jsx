@@ -3,8 +3,9 @@ import { useGeolocation } from '../hooks/useGeolocation';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { MapPin, Tag, RefreshCcw, AlertTriangle, Loader2, Search, X, Navigation } from 'lucide-react';
+import { MapPin, Tag, RefreshCcw, AlertTriangle, Loader2, Search, X, Navigation, Clock } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import OfferDetailModal from '../components/OfferDetailModal';
 
 const PAGE_SIZE = 20;
 
@@ -22,6 +23,9 @@ export default function Home() {
   const [pageOffset, setPageOffset] = useState(0);
   const [claimingId, setClaimingId] = useState(null);
   const [error, setError] = useState(null);
+  const [selectedDeal, setSelectedDeal] = useState(null);
+  const [dealBranches, setDealBranches] = useState([]);
+  const [userCoupons, setUserCoupons] = useState({}); // Track claimed status: { dealId: couponId }
   
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState('All');
@@ -39,10 +43,12 @@ export default function Home() {
         ...d,
         category: detail?.category_id ? (catsMapRef.current[detail.category_id] || 'Other') : 'Other',
         tenant_id: detail?.tenant_id,
-        discount_type: detail?.discount_type || 'percentage',
         discount_value: detail?.discount_value,
         tenant_name: tenant?.name || 'Business',
         tenant_logo: tenant?.logo_url?.replace('via.placeholder.com', 'placehold.co'),
+        end_date: detail?.end_date,
+        image_url: detail?.image_url,
+        description: detail?.description,
       };
     });
   }, []);
@@ -114,20 +120,62 @@ export default function Home() {
     fetchNearbyDeals(coords.latitude, coords.longitude, newOffset, true);
   }, [coords, isFetchingMore, hasMore, pageOffset, fetchNearbyDeals]);
 
+  const fetchUserCoupons = async () => {
+    if (!user) return;
+    const { data } = await supabase.from('coupons').select('id, deal_id, status').eq('user_id', user.id);
+    if (data) {
+      const cmap = {};
+      data.forEach(c => { cmap[c.deal_id] = { id: c.id, status: c.status }; });
+      setUserCoupons(cmap);
+    }
+  };
+
+  useEffect(() => {
+    fetchUserCoupons();
+  }, [user]);
+
+  const fetchDealBranches = async (tenantId) => {
+    const { data } = await supabase.from('branches').select('*').eq('tenant_id', tenantId);
+    if (data && coords) {
+      // Calculate basic distance using Haversine if needed, or just append the distance from the original deal query if it's the only one. 
+      // For simplicity, we just pass the branches, distances can be handled later or omitted if not critical.
+      setDealBranches(data);
+    } else {
+      setDealBranches(data || []);
+    }
+  };
+
+  useEffect(() => {
+    if (selectedDeal?.tenant_id) {
+      fetchDealBranches(selectedDeal.tenant_id);
+    } else {
+      setDealBranches([]);
+    }
+  }, [selectedDeal]);
+
   const claimDeal = async (deal) => {
     if (!user) { navigate('/login'); return; }
+    
+    // If already claimed, act as 'View Coupon'
+    if (userCoupons[deal.deal_id]) {
+      navigate(`/coupons?id=${userCoupons[deal.deal_id].id}`);
+      return;
+    }
+
     setClaimingId(deal.deal_id);
     try {
       const qrCode = `RG-${Math.random().toString(36).substring(2, 10).toUpperCase()}`;
-      const { error: claimError } = await supabase.from('coupons').insert({
+      const { data, error: claimError } = await supabase.from('coupons').insert({
         deal_id: deal.deal_id,
         tenant_id: deal.tenant_id,
         user_id: user.id,
         qr_code: qrCode,
         status: 'pending'
-      });
+      }).select().single();
       if (claimError) throw claimError;
-      navigate('/coupons');
+      
+      setUserCoupons(prev => ({ ...prev, [deal.deal_id]: { id: data.id, status: 'pending' } }));
+      navigate(`/coupons?id=${data.id}`);
     } catch (err) {
       console.error('Error claiming deal:', err);
       if (err.code === '23505') {
@@ -357,10 +405,15 @@ export default function Home() {
             )}
           </div>
         ) : (
-          filteredDeals.map((deal, idx) => (
+          filteredDeals.map((deal, idx) => {
+            const isClaimed = !!userCoupons[deal.deal_id];
+            // Format end_date if present
+            const endDateString = deal.end_date ? new Date(deal.end_date).toLocaleDateString() : null;
+
+            return (
             <div 
               key={`${deal.deal_id}-${deal.branch_name || idx}`}
-              onClick={() => claimDeal(deal)}
+              onClick={() => setSelectedDeal(deal)}
               className="bg-white/10 backdrop-blur-lg rounded-[32px] shadow-xl border border-white/20 overflow-hidden hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 group cursor-pointer"
             >
               <div className="p-6">
@@ -370,8 +423,8 @@ export default function Home() {
                        {deal.tenant_logo ? (
                          <img src={deal.tenant_logo} alt="Logo" className="w-full h-full object-contain" />
                        ) : (
-                        <div className="w-full h-full bg-brand-primary/10 flex items-center justify-center">
-                           <Tag size={24} className="text-brand-primary" />
+                        <div className="w-full h-full bg-brand-primary/10 flex items-center justify-center text-brand-primary font-bold text-xl">
+                           {deal.tenant_name?.[0] || <Tag size={24} />}
                          </div>
                        )}
                     </div>
@@ -380,36 +433,39 @@ export default function Home() {
                       <h3 className="font-extrabold text-white text-xl leading-snug group-hover:text-brand-primary transition-colors">
                         {deal.deal_title}
                       </h3>
-                      <p className="text-white/60 text-xs font-medium flex items-center gap-1.5 mt-1.5">
-                        <MapPin size={12} className="text-brand-primary" />
-                        {deal.branch_name}
-                      </p>
+                      {endDateString && (
+                        <p className="text-white/50 text-[10px] font-black uppercase mt-1 flex items-center gap-1">
+                          <Clock size={10} /> {t('home.expires')} {endDateString}
+                        </p>
+                      )}
                     </div>
                   </div>
-                  <span className="bg-white text-brand-secondary text-[10px] uppercase font-black px-3 py-1.5 rounded-xl whitespace-nowrap shadow-lg">
+                  <span className="bg-white text-brand-secondary text-[10px] uppercase font-black px-3 py-1.5 rounded-xl whitespace-nowrap shadow-lg flex-shrink-0">
                     {Math.round(deal.distance / 100) / 10}km
                   </span>
                 </div>
                 
                 <div className="pt-5 border-t border-white/10 flex items-center justify-between">
                   <div className="flex flex-col items-start min-w-0 pr-3">
-                    <span className="text-[10px] text-white/40 font-bold uppercase tracking-wider">{t('home.offer')}</span>
-                    <span className="text-lg font-black text-white truncate w-full">{t('home.saveBig')}</span>
+                     <p className="text-white/60 text-xs font-medium flex items-center gap-1.5">
+                       <MapPin size={12} className="text-brand-primary" />
+                       <span className="truncate max-w-[150px]">{deal.branch_name}</span>
+                     </p>
                   </div>
                   <button 
-                    disabled={claimingId === deal.deal_id}
-                    className="flex-shrink-0 whitespace-nowrap bg-gradient-to-r from-brand-primary to-brand-secondary text-white font-black px-6 py-4 rounded-2xl hover:opacity-90 transition-all shadow-xl shadow-brand-primary/20 flex items-center justify-center gap-2 border border-white/10"
+                    onClick={(e) => { e.stopPropagation(); setSelectedDeal(deal); }}
+                    className={`flex-shrink-0 whitespace-nowrap font-black px-5 py-3 rounded-2xl transition-all flex items-center justify-center gap-2 border text-xs uppercase tracking-wider ${
+                      isClaimed 
+                        ? 'bg-white/10 text-brand-primary border-brand-primary/30 hover:bg-white/20' 
+                        : 'bg-gradient-to-r from-brand-primary to-brand-secondary text-white shadow-xl shadow-brand-primary/20 hover:opacity-90 border-transparent'
+                    }`}
                   >
-                    {claimingId === deal.deal_id ? (
-                      <><Loader2 size={20} className="animate-spin text-brand-primary" /> Claiming...</>
-                    ) : (
-                      t('home.claimDeal')
-                    )}
+                    {isClaimed ? t('home.viewOffer') : t('home.viewDetails')}
                   </button>
                 </div>
               </div>
             </div>
-          ))
+          )})
         )}
       </div>
 
@@ -436,6 +492,31 @@ export default function Home() {
             </div>
           )}
         </div>
+      )}
+
+      {selectedDeal && (
+        <OfferDetailModal
+          isOpen={!!selectedDeal}
+          onClose={() => setSelectedDeal(null)}
+          tenantName={selectedDeal.tenant_name}
+          tenantLogo={selectedDeal.tenant_logo}
+          title={selectedDeal.deal_title}
+          description={selectedDeal.description}
+          imageUrl={selectedDeal.image_url}
+          endDate={selectedDeal.end_date}
+          branches={(dealBranches && dealBranches.length > 0) ? dealBranches : [{ branch_name: selectedDeal.branch_name, ...selectedDeal }]}
+          actionButtons={[
+            {
+              id: 'claim-btn',
+              text: userCoupons[selectedDeal.deal_id] ? t('home.viewCoupon') : t('home.claimDeal'),
+              onClick: () => claimDeal(selectedDeal),
+              disabled: claimingId === selectedDeal.deal_id || userCoupons[selectedDeal.deal_id]?.status === 'redeemed',
+              loading: claimingId === selectedDeal.deal_id,
+              primary: true,
+              icon: Tag
+            }
+          ]}
+        />
       )}
     </div>
   );
