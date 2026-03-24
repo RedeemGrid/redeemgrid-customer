@@ -15,9 +15,11 @@ export default defineConfig({
         name: 'RedeemGrid Customer',
         short_name: 'RedeemGrid',
         description: 'Redeem your local rewards seamlessly.',
-        theme_color: '#000000',
-        background_color: '#000000',
+        start_url: '/redeemgrid-customer/',
+        scope: '/redeemgrid-customer/',
         display: 'standalone',
+        background_color: '#000000',
+        theme_color: '#000000',
         orientation: 'portrait',
         icons: [
           {
