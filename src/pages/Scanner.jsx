@@ -98,27 +98,25 @@ export default function Scanner() {
 
       {/* Scanner Container */}
       <div className="w-full max-w-sm aspect-square bg-black/40 backdrop-blur-xl border-2 border-dashed border-white/20 rounded-[48px] overflow-hidden relative shadow-2xl flex items-center justify-center">
-        {isProcessing ? (
-          <div className="flex flex-col items-center gap-4 animate-in fade-in zoom-in">
+        {isProcessing && (
+          <div className="absolute inset-0 z-20 bg-black/80 backdrop-blur-md flex flex-col items-center justify-center gap-4 animate-in fade-in zoom-in">
             <Loader2 size={48} className="text-brand-primary animate-spin" />
             <p className="text-white font-black uppercase tracking-widest text-sm text-center whitespace-pre-wrap">{t('scanner.processingCoupon')}</p>
           </div>
-        ) : (
-          <>
-            <div id="reader" className="w-full h-full absolute inset-0"></div>
-            
-            {/* Viewfinder Overlay Mask (CSS) */}
-            {!scanResult && (
-              <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-                <div className="w-64 h-64 border-2 border-brand-primary/50 relative">
-                  <div className="absolute -top-1 -left-1 w-8 h-8 border-t-4 border-l-4 border-brand-primary"></div>
-                  <div className="absolute -top-1 -right-1 w-8 h-8 border-t-4 border-r-4 border-brand-primary"></div>
-                  <div className="absolute -bottom-1 -left-1 w-8 h-8 border-b-4 border-l-4 border-brand-primary"></div>
-                  <div className="absolute -bottom-1 -right-1 w-8 h-8 border-b-4 border-r-4 border-brand-primary"></div>
-                </div>
-              </div>
-            )}
-          </>
+        )}
+        
+        <div id="reader" className="w-full h-full absolute inset-0 z-0"></div>
+        
+        {/* Viewfinder Overlay Mask (CSS) */}
+        {!scanResult && !isProcessing && (
+          <div className="absolute inset-0 z-10 pointer-events-none flex items-center justify-center">
+            <div className="w-64 h-64 border-2 border-brand-primary/50 relative">
+              <div className="absolute -top-1 -left-1 w-8 h-8 border-t-4 border-l-4 border-brand-primary"></div>
+              <div className="absolute -top-1 -right-1 w-8 h-8 border-t-4 border-r-4 border-brand-primary"></div>
+              <div className="absolute -bottom-1 -left-1 w-8 h-8 border-b-4 border-l-4 border-brand-primary"></div>
+              <div className="absolute -bottom-1 -right-1 w-8 h-8 border-b-4 border-r-4 border-brand-primary"></div>
+            </div>
+          </div>
         )}
       </div>
 
