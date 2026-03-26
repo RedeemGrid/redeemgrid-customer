@@ -62,7 +62,7 @@ export default function Layout() {
   };
   
   return (
-    <div className="min-h-screen bg-bg-end bg-gradient-to-br from-bg-start via-bg-mid to-bg-end text-white selection:bg-brand-primary/30 pb-24">
+    <div className="min-h-screen bg-bg-page text-text-main selection:bg-brand-primary/10 pb-24">
       <OfflineOverlay />
       <ReloadPrompt />
       {/* Background blobs */}
@@ -79,92 +79,95 @@ export default function Layout() {
         />
       )}
 
-      <header className="bg-white/5 backdrop-blur-lg border-b border-white/10 flex items-center justify-between px-6 py-4 sticky top-0 z-[70]">
-        <div onClick={() => navigate('/')} className="cursor-pointer flex items-center gap-3 group">
-          <div className="w-10 h-10 bg-gradient-to-br from-brand-primary to-brand-secondary rounded-xl flex items-center justify-center text-white shadow-lg shadow-brand-primary/20 group-hover:scale-110 transition-transform duration-300">
-            <QrCode size={22} />
+      <header className="bg-white/80 backdrop-blur-lg border-b border-black/5 flex items-center justify-between px-6 py-4 sticky top-0 z-[70]">
+        <div onClick={() => navigate('/')} className="cursor-pointer flex flex-col items-start gap-0.5 group">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center bg-brand-primary/10 group-hover:scale-110 transition-transform duration-300">
+              <img src="pwa-192x192.png" alt="Nabbu Logo" className="w-full h-full object-cover" />
+            </div>
+            <h1 className="text-xl font-black text-text-main tracking-tight">Nabbu</h1>
           </div>
-          <h1 className="text-xl font-black text-white tracking-tight">RedeemGrid</h1>
+          <p className="text-[10px] font-bold text-brand-primary uppercase tracking-wider ml-10">{t('login.subtitle')}</p>
         </div>
         
-        <div className="relative z-[70]">
+        <div className="relative">
           <button 
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="relative w-11 h-11 rounded-[16px] overflow-hidden border-2 border-white/20 shadow-xl hover:border-brand-primary transition-all active:scale-95 group"
+            className="relative w-11 h-11 rounded-[16px] overflow-hidden border border-black/10 shadow-premium hover:shadow-xl hover:rotate-3 hover:scale-110 transition-all active:scale-95 group z-[70] bg-white flex-shrink-0"
           >
             {profile?.avatar_url ? (
-              <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+              <img src={profile.avatar_url} alt="" className="w-full h-full object-cover group-hover:scale-110 transition-transform" />
             ) : (
-              <div className="w-full h-full flex items-center justify-center bg-brand-primary/10 text-brand-primary text-xs font-bold">
+              <div className="w-full h-full flex items-center justify-center bg-brand-primary/5 text-brand-primary text-xs font-bold">
                 {profile?.full_name?.substring(0, 1) || 'U'}
               </div>
             )}
             {hasUnread && (
-              <span className="absolute top-1.5 right-1.5 w-3 h-3 bg-red-500 rounded-full border-2 border-white/20 animate-pulse shadow-lg shadow-red-500/50"></span>
+              <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border border-white animate-pulse shadow-sm z-10"></span>
             )}
           </button>
 
           {isMenuOpen && (
-            <div className="absolute right-0 mt-4 w-64 bg-bg-end/95 backdrop-blur-xl rounded-[32px] border border-white/10 shadow-2xl z-[70] p-2 overflow-hidden">
-              <div className="px-4 py-4 border-b border-white/[0.08] mb-2">
-                <p className="text-[10px] text-white/40 font-black uppercase tracking-widest mb-0.5">{t('layout.welcomeBack')}</p>
-                <p className="text-sm font-black text-white truncate">{profile?.full_name || 'Redeemer'}</p>
+            <div className="absolute right-0 mt-4 w-64 bg-white/95 backdrop-blur-xl rounded-[32px] border border-black/5 shadow-2xl z-[70] p-2 overflow-hidden">
+              <div className="px-4 py-4 border-b border-black/[0.05] mb-2">
+                <p className="text-[10px] text-text-muted font-black uppercase tracking-widest mb-0.5">{t('layout.welcomeBack')}</p>
+                <p className="text-sm font-black text-text-main truncate">{profile?.full_name || 'Redeemer'}</p>
               </div>
               
               <div className="space-y-1 p-1">
                 <button 
                   onClick={() => navigate('/notifications')}
-                  className="w-full flex items-center justify-between px-4 py-3.5 rounded-2xl hover:bg-white/10 transition-colors group"
+                  className="w-full flex items-center justify-between px-4 py-3.5 rounded-2xl hover:bg-black/5 transition-colors group"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 bg-brand-primary/10 rounded-xl flex items-center justify-center text-brand-primary/70 group-hover:text-brand-primary group-hover:bg-brand-primary/20 transition-all">
+                    <div className="w-9 h-9 bg-brand-primary/5 rounded-xl flex items-center justify-center text-brand-primary/60 group-hover:text-brand-primary group-hover:bg-brand-primary/10 transition-all">
                       <Bell size={18} />
                     </div>
-                    <span className="text-sm font-bold text-white/90 group-hover:text-white transition-colors">{t('layout.activity')}</span>
+                    <span className="text-sm font-bold text-text-muted group-hover:text-text-main transition-colors">{t('layout.activity')}</span>
                   </div>
                   {hasUnread && (
-                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-black text-white overflow-hidden shadow-lg">•</span>
+                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-black text-white overflow-hidden shadow-sm">•</span>
                   )}
                 </button>
 
                 <button 
                   onClick={() => navigate('/profile')}
-                  className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl hover:bg-white/10 transition-colors group text-left"
+                  className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl hover:bg-black/5 transition-colors group text-left"
                 >
-                  <div className="w-9 h-9 bg-brand-primary/10 rounded-xl flex items-center justify-center text-brand-primary/70 group-hover:text-brand-primary group-hover:bg-brand-primary/20 transition-all">
+                  <div className="w-9 h-9 bg-brand-primary/5 rounded-xl flex items-center justify-center text-brand-primary/60 group-hover:text-brand-primary group-hover:bg-brand-primary/10 transition-all">
                     <User size={18} />
                   </div>
-                  <span className="text-sm font-bold text-white/90 group-hover:text-white transition-colors">{t('layout.myProfile')}</span>
+                  <span className="text-sm font-bold text-text-muted group-hover:text-text-main transition-colors">{t('layout.myProfile')}</span>
                 </button>
 
                 <button 
                   onClick={() => navigate('/settings')}
-                  className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl hover:bg-white/10 transition-colors group text-left"
+                  className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl hover:bg-black/5 transition-colors group text-left"
                 >
-                  <div className="w-9 h-9 bg-brand-primary/10 rounded-xl flex items-center justify-center text-brand-primary/70 group-hover:text-brand-primary group-hover:bg-brand-primary/20 transition-all">
+                  <div className="w-9 h-9 bg-brand-primary/5 rounded-xl flex items-center justify-center text-brand-primary/60 group-hover:text-brand-primary group-hover:bg-brand-primary/10 transition-all">
                     <Settings size={18} />
                   </div>
-                  <span className="text-sm font-bold text-white/90 group-hover:text-white transition-colors">{t('layout.settings')}</span>
+                  <span className="text-sm font-bold text-text-muted group-hover:text-text-main transition-colors">{t('layout.settings')}</span>
                 </button>
 
                 <button 
                   onClick={() => navigate('/support')}
-                  className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl hover:bg-white/10 transition-colors group text-left"
+                  className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl hover:bg-black/5 transition-colors group text-left"
                 >
-                  <div className="w-9 h-9 bg-brand-primary/10 rounded-xl flex items-center justify-center text-brand-primary/70 group-hover:text-brand-primary group-hover:bg-brand-primary/20 transition-all">
+                  <div className="w-9 h-9 bg-brand-primary/5 rounded-xl flex items-center justify-center text-brand-primary/60 group-hover:text-brand-primary group-hover:bg-brand-primary/10 transition-all">
                     <HelpCircle size={18} />
                   </div>
-                  <span className="text-sm font-bold text-white/90 group-hover:text-white transition-colors">{t('layout.supportFaq')}</span>
+                  <span className="text-sm font-bold text-text-muted group-hover:text-text-main transition-colors">{t('layout.supportFaq')}</span>
                 </button>
 
                 <button 
                   onClick={() => navigate('/about')}
-                  className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl hover:bg-white/10 transition-colors group text-left"
+                  className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl hover:bg-black/5 transition-colors group text-left"
                 >
                   <div className="w-9 h-9 bg-brand-primary/10 rounded-xl flex items-center justify-center text-brand-primary/70 group-hover:text-brand-primary group-hover:bg-brand-primary/20 transition-all">
                     <Info size={18} />
                   </div>
-                  <span className="text-sm font-bold text-white/90 group-hover:text-white transition-colors">{t('layout.aboutApp')}</span>
+                  <span className="text-sm font-bold text-text-muted group-hover:text-text-main transition-colors">{t('layout.aboutApp')}</span>
                 </button>
               </div>
             </div>
@@ -178,12 +181,12 @@ export default function Layout() {
 
       {/* Primary Bottom Navigation */}
       <div className="fixed bottom-6 inset-x-0 flex justify-center z-30 pointer-events-none">
-        <nav className="flex items-center gap-1 bg-white/10 backdrop-blur-xl border border-white/20 px-2 py-2 rounded-2xl shadow-2xl pointer-events-auto">
+        <nav className="flex items-center gap-1 bg-white border border-black/5 px-2 py-2 rounded-2xl shadow-xl pointer-events-auto">
           <NavLink 
             to="/" 
             end
             className={({ isActive }) => `flex items-center gap-2 px-5 py-3 rounded-xl transition-all duration-300 ${
-              isActive ? 'bg-white text-brand-secondary shadow-lg scale-105' : 'text-white/60 hover:text-white hover:bg-white/5'
+              isActive ? 'bg-brand-primary text-white shadow-lg scale-105' : 'text-text-muted hover:text-text-main hover:bg-black/5'
             }`}
           >
             <MapPin size={20} />
@@ -193,17 +196,17 @@ export default function Layout() {
           <NavLink 
             to="/coupons" 
             className={({ isActive }) => `flex items-center gap-2 px-5 py-3 rounded-xl transition-all duration-300 ${
-              isActive ? 'bg-white text-brand-secondary shadow-lg scale-105' : 'text-white/60 hover:text-white hover:bg-white/5'
+              isActive ? 'bg-brand-primary text-white shadow-lg scale-105' : 'text-text-muted hover:text-text-main hover:bg-black/5'
             }`}
           >
             <Ticket size={20} />
             <span className="text-xs font-bold">{t('nav.coupons')}</span>
           </NavLink>
-
+ 
           <NavLink 
             to="/scanner" 
             className={({ isActive }) => `flex items-center gap-2 px-5 py-3 rounded-xl transition-all duration-300 ${
-              isActive ? 'bg-white text-brand-secondary shadow-lg scale-105' : 'text-white/60 hover:text-white hover:bg-white/5'
+              isActive ? 'bg-brand-primary text-white shadow-lg scale-105' : 'text-text-muted hover:text-text-main hover:bg-black/5'
             }`}
           >
             <QrCode size={20} />

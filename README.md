@@ -1,6 +1,6 @@
-# RedeemGrid Customer App 📱
+# Nabbu Customer App 📱
 
-The official customer-facing Progress Web Application (PWA) for the **RedeemGrid** ecosystem. This application allows end-users to discover local deals, claim coupons, and manage their rewards within a premium, high-performance interface.
+The official customer-facing Progress Web Application (PWA) for the **Nabbu** ecosystem. This application allows end-users to discover local deals, claim coupons, and manage their rewards within a premium, high-performance interface.
 
 ## ✨ Features
 
@@ -61,4 +61,4 @@ The official customer-facing Progress Web Application (PWA) for the **RedeemGrid
 
 ## 📄 License
 
-© 2026 RedeemGrid. All rights reserved.
+© 2026 Nabbu. All rights reserved.

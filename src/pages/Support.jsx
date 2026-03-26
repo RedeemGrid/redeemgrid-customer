@@ -45,24 +45,24 @@ export default function Support() {
       <header className="flex items-center gap-4">
         <button 
           onClick={() => navigate(-1)}
-          className="p-2.5 -ml-2 text-white/40 hover:text-white transition-colors bg-white/5 rounded-2xl border border-white/5"
+          className="p-3 bg-white text-text-muted hover:text-text-main rounded-2xl border border-black/5 shadow-sm transition-all"
         >
           <ChevronLeft size={24} />
         </button>
-        <h2 className="text-3xl font-black text-white tracking-tight italic uppercase">{t('support.title')}</h2>
+        <h2 className="text-3xl font-black text-text-main tracking-tight uppercase">{t('support.title')}</h2>
       </header>
 
       <main className="space-y-8">
         {/* Intro */}
-        <div className="bg-white/10 backdrop-blur-xl rounded-[48px] p-10 border border-white/20 shadow-2xl relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-brand-primary/20 blur-3xl rounded-full transition-all group-hover:scale-150"></div>
+        <div className="bg-white rounded-[40px] p-10 border border-black/5 shadow-sm relative overflow-hidden group">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-brand-primary/5 blur-3xl rounded-full transition-all group-hover:scale-150"></div>
           
           <div className="relative z-10 text-center">
-            <div className="w-20 h-20 bg-brand-primary/20 rounded-3xl flex items-center justify-center mx-auto border border-brand-primary/30 shadow-xl shadow-brand-primary/10 mb-6">
+            <div className="w-20 h-20 bg-brand-primary/5 rounded-3xl flex items-center justify-center mx-auto border border-brand-primary/10 shadow-sm mb-6">
               <HelpCircle size={40} className="text-brand-primary animate-pulse" />
             </div>
-            <h3 className="text-2xl font-black text-white mb-2 uppercase italic tracking-tighter">{t('support.introTitle')}</h3>
-            <p className="text-white/40 font-bold uppercase tracking-widest text-[10px]">{t('support.introSubtitle')}</p>
+            <h3 className="text-2xl font-black text-text-main mb-2 uppercase tracking-tighter">{t('support.introTitle')}</h3>
+            <p className="text-text-muted font-bold uppercase tracking-widest text-[10px]">{t('support.introSubtitle')}</p>
           </div>
         </div>
 
@@ -73,21 +73,21 @@ export default function Support() {
             <div 
               key={faq.id}
               className={`
-                bg-white/5 backdrop-blur-md rounded-[32px] border transition-all duration-300 overflow-hidden
-                ${openFaq === faq.id ? 'border-brand-primary/40 bg-white/10' : 'border-white/10'}
+                bg-white rounded-[32px] border transition-all duration-300 overflow-hidden shadow-sm
+                ${openFaq === faq.id ? 'border-brand-primary/20 bg-neutral-50' : 'border-black/5'}
               `}
             >
               <button 
                 onClick={() => setOpenFaq(openFaq === faq.id ? null : faq.id)}
                 className="w-full flex items-center gap-4 p-6 text-left"
               >
-                <div className="w-10 h-10 rounded-2xl bg-black/20 flex items-center justify-center flex-shrink-0">
+                <div className="w-10 h-10 rounded-2xl bg-neutral-100 flex items-center justify-center flex-shrink-0 border border-black/5">
                   {faq.icon}
                 </div>
-                <span className="flex-1 font-bold text-sm leading-tight">{faq.question}</span>
+                <span className="flex-1 font-bold text-sm leading-tight text-text-main">{faq.question}</span>
                 <ChevronDown 
                   size={20} 
-                  className={`text-white/20 transition-transform duration-300 ${openFaq === faq.id ? 'rotate-180 text-brand-primary' : ''}`} 
+                  className={`text-text-muted/30 transition-transform duration-300 ${openFaq === faq.id ? 'rotate-180 text-brand-primary' : ''}`} 
                 />
               </button>
               
@@ -98,7 +98,7 @@ export default function Support() {
                 `}
               >
                 <div className="pl-14">
-                  <p className="text-white/60 text-sm leading-relaxed font-medium">
+                  <p className="text-text-muted text-sm leading-relaxed font-medium">
                     {faq.answer}
                   </p>
                 </div>
@@ -114,33 +114,33 @@ export default function Support() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <a 
               href={`mailto:support@${APP_CONFIG.companyUrl.replace('https://', '')}`}
-              className="group bg-gradient-to-br from-brand-primary to-brand-primary/80 p-6 rounded-[32px] flex items-center gap-4 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-brand-primary/20"
+              className="group bg-brand-primary p-6 rounded-[32px] flex items-center gap-4 hover:opacity-90 active:scale-[0.98] transition-all shadow-lg shadow-brand-primary/20"
             >
               <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center">
                 <Mail size={24} className="text-white" />
               </div>
               <div>
                 <p className="font-black text-white text-sm">{t('support.sendEmail')}</p>
-                <p className="text-white/60 text-[10px] font-bold uppercase tracking-widest">support@{APP_CONFIG.companyUrl.replace('https://', '')}</p>
+                <p className="text-white/70 text-[10px] font-bold uppercase tracking-widest">support@{APP_CONFIG.companyUrl.replace('https://', '')}</p>
               </div>
             </a>
 
             <button 
-              className="group bg-white/5 backdrop-blur-md border border-white/10 p-6 rounded-[32px] flex items-center gap-4 hover:bg-white/10 transition-all text-left"
+              className="group bg-white border border-black/5 p-6 rounded-[32px] flex items-center gap-4 hover:bg-neutral-50 transition-all text-left shadow-sm"
             >
-              <div className="w-12 h-12 rounded-2xl bg-brand-secondary/20 flex items-center justify-center text-brand-secondary">
+              <div className="w-12 h-12 rounded-2xl bg-brand-secondary/10 flex items-center justify-center text-brand-secondary border border-brand-secondary/20">
                 <MessageCircle size={24} />
               </div>
               <div>
-                <p className="font-black text-white text-sm">{t('support.liveChat')}</p>
-                <p className="text-white/20 text-[10px] font-bold uppercase tracking-widest">{t('support.comingSoon')}</p>
+                <p className="font-black text-text-main text-sm">{t('support.liveChat')}</p>
+                <p className="text-text-muted/40 text-[10px] font-bold uppercase tracking-widest">{t('support.comingSoon')}</p>
               </div>
             </button>
           </div>
         </div>
 
         <div className="text-center pt-10">
-          <p className="text-[10px] text-white/20 font-black uppercase tracking-widest">
+          <p className="text-[10px] text-text-muted font-black uppercase tracking-widest">
             {t('support.businessHours')}
           </p>
         </div>

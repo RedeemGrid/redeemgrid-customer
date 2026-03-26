@@ -13,14 +13,14 @@ export default defineConfig({
       injectRegister: 'auto',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
       manifest: {
-        name: 'RedeemGrid Customer',
-        short_name: 'RedeemGrid',
+        name: 'Nabbu Customer',
+        short_name: 'Nabbu',
         description: 'Redeem your local rewards seamlessly.',
         start_url: '/redeemgrid-customer/',
         scope: '/redeemgrid-customer/',
         display: 'standalone',
-        background_color: '#000000',
-        theme_color: '#000000',
+        background_color: '#0c0a09',
+        theme_color: '#059669',
         orientation: 'portrait',
         icons: [
           {

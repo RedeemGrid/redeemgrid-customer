@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { MapPin, Tag, RefreshCcw, AlertTriangle, Loader2, Search, X, Navigation, Clock } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import OfferDetailModal from '../components/OfferDetailModal';
+import SafeImage from '../components/SafeImage';
 
 const PAGE_SIZE = 20;
 
@@ -222,8 +223,8 @@ export default function Home() {
   if (permissionStatus === 'idle' || permissionStatus === 'checking') {
     return (
       <div className="flex flex-col items-center justify-center py-20 animate-pulse">
-        <MapPin size={48} className="text-white/20 mb-4" />
-        <p className="text-white/40 font-bold uppercase tracking-widest text-[10px]">{t('home.checkingAccess')}</p>
+        <MapPin size={48} className="text-text-muted/20 mb-4" />
+        <p className="text-text-muted font-bold uppercase tracking-widest text-[10px]">{t('home.checkingAccess')}</p>
       </div>
     );
   }
@@ -232,46 +233,38 @@ export default function Home() {
   if (permissionStatus === 'loading') {
     return (
       <div className="flex flex-col items-center justify-center py-20">
-        <div className="w-16 h-16 bg-brand-primary/10 rounded-[28px] flex items-center justify-center mb-6 border border-brand-primary/20">
+        <div className="w-16 h-16 bg-brand-primary/5 rounded-[28px] flex items-center justify-center mb-6 border border-brand-primary/10">
           <Loader2 size={32} className="text-brand-primary animate-spin" />
         </div>
-        <p className="text-white/40 font-bold uppercase tracking-widest text-[10px]">{t('home.retrievingLocation')}</p>
+        <p className="text-text-muted font-bold uppercase tracking-widest text-[10px]">{t('home.retrievingLocation')}</p>
       </div>
     );
   }
 
-  // First-time visit — show branded rationale before triggering browser prompt
+   // First-time visit — show branded rationale before triggering browser prompt
   if (permissionStatus === 'prompt') {
     return (
       <div className="flex flex-col items-center justify-center py-10 px-2">
-        <div className="w-full max-w-sm bg-white/10 backdrop-blur-xl rounded-[48px] border border-white/20 shadow-2xl overflow-hidden relative">
-          {/* Top decorative gradient */}
-          <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-brand-primary via-brand-secondary to-brand-primary opacity-80"></div>
-
+        <div className="w-full max-w-sm bg-white rounded-[40px] border border-black/5 shadow-xl overflow-hidden relative">
           <div className="p-10 text-center">
-            {/* Icon */}
-            <div className="w-24 h-24 bg-gradient-to-br from-brand-primary to-brand-secondary rounded-[40px] flex items-center justify-center mx-auto mb-8 shadow-2xl shadow-brand-primary/30">
-              <Navigation size={44} className="text-white" fill="currentColor" />
+            <div className="w-24 h-24 bg-brand-primary/5 rounded-full flex items-center justify-center mx-auto mb-8 text-brand-primary">
+              <Navigation size={44} fill="currentColor" />
             </div>
 
-            <h2 className="text-2xl font-black text-white mb-3 tracking-tight">
-              {t('home.enableLocationBtn')}
+            <h2 className="text-2xl font-black text-text-main mb-3 tracking-tight">
+              {t('home.locationRationaleTitle')}
             </h2>
-            <p className="text-white/60 text-sm leading-relaxed font-medium mb-10">
+            <p className="text-text-muted text-sm leading-relaxed font-medium mb-10">
               {t('home.locationRationaleDesc')}
             </p>
 
             <button
               onClick={requestLocation}
-              className="w-full bg-gradient-to-r from-brand-primary to-brand-secondary text-white font-black py-5 rounded-[28px] shadow-xl shadow-brand-primary/20 hover:opacity-90 active:scale-[0.98] transition-all text-sm uppercase tracking-widest flex items-center justify-center gap-3"
+              className="w-full bg-brand-secondary text-white font-black py-5 rounded-full shadow-lg shadow-brand-secondary/20 hover:bg-brand-primary active:scale-[0.98] transition-all text-sm uppercase tracking-widest flex items-center justify-center gap-3"
             >
               <MapPin size={20} />
               {t('home.enableLocationBtn')}
             </button>
-
-            <p className="text-white/20 text-[10px] font-bold uppercase tracking-widest mt-6">
-              You can change this anytime in browser settings
-            </p>
           </div>
         </div>
       </div>
@@ -282,17 +275,17 @@ export default function Home() {
   if (permissionStatus === 'denied') {
     return (
       <div className="flex flex-col items-center justify-center py-10 px-2">
-        <div className="w-full max-w-sm bg-red-500/10 backdrop-blur-xl rounded-[48px] border border-red-500/20 shadow-2xl overflow-hidden p-10 text-center">
-          <div className="w-20 h-20 bg-red-500/20 rounded-[32px] flex items-center justify-center mx-auto mb-6 border border-red-500/30">
-            <AlertTriangle size={36} className="text-red-400" />
+        <div className="w-full max-w-sm bg-white rounded-[40px] border border-black/5 shadow-xl overflow-hidden p-10 text-center">
+          <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6">
+            <AlertTriangle size={36} className="text-red-500" />
           </div>
-          <h3 className="font-black text-white text-xl mb-3">{t('home.accessDeniedTitle')}</h3>
-          <p className="text-white/50 text-sm leading-relaxed mb-8">
+          <h3 className="font-black text-text-main text-xl mb-3">{t('home.accessDeniedTitle')}</h3>
+          <p className="text-text-muted text-sm leading-relaxed mb-8">
             {t('home.accessDeniedDesc')}
           </p>
           <button
             onClick={() => window.location.reload()}
-            className="w-full bg-red-500/20 border border-red-500/30 text-red-400 font-black py-5 rounded-[28px] hover:bg-red-500/30 transition-all active:scale-95 text-sm uppercase tracking-widest"
+            className="w-full bg-red-500 text-white font-black py-5 rounded-full shadow-lg shadow-red-500/20 hover:opacity-90 transition-all active:scale-95 text-sm uppercase tracking-widest"
           >
             {t('home.retryCheckBtn')}
           </button>
@@ -328,13 +321,13 @@ export default function Home() {
     <div className="space-y-8 pb-24">
       <header className="flex items-center justify-between">
         <div>
-          <h2 className="text-3xl font-black text-white tracking-tight">{t('home.activeDeals')}</h2>
-          <p className="text-sm text-white/60 font-medium">{t('home.subtitle')}</p>
+          <h2 className="text-3xl font-black text-text-main tracking-tight">{t('home.activeDeals')}</h2>
+          <p className="text-sm text-text-muted font-medium">{t('home.subtitle')}</p>
         </div>
         <button 
           onClick={() => coords && fetchNearbyDeals(coords.latitude, coords.longitude)}
           disabled={loading}
-          className="p-3 bg-white/5 text-brand-primary hover:bg-white/10 rounded-full transition-all disabled:opacity-50 border border-white/10"
+          className="p-3 bg-white text-brand-primary hover:bg-brand-primary/5 rounded-full transition-all disabled:opacity-50 border border-black/5 shadow-sm"
         >
           <RefreshCcw size={20} className={loading ? 'animate-spin' : ''} />
         </button>
@@ -350,18 +343,18 @@ export default function Home() {
       {/* Search and Filters */}
       <div className="space-y-5">
         <div className="relative group">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30 group-focus-within:text-brand-primary transition-colors" size={20} />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted/40 group-focus-within:text-brand-primary transition-colors" size={20} />
           <input 
             type="text"
             placeholder={t('home.searchPlaceholder')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-brand-primary/20 transition-all font-medium text-white placeholder:text-white/30"
+            className="w-full bg-white border border-black/5 rounded-2xl py-4 pl-12 pr-4 shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/10 transition-all font-medium text-text-main placeholder:text-text-muted/40"
           />
           {searchQuery && (
             <button 
               onClick={() => setSearchQuery('')}
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-white/20 hover:text-white/50"
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-text-muted/40 hover:text-text-main"
             >
               <X size={18} />
             </button>
@@ -373,10 +366,10 @@ export default function Home() {
             <button
               key={cat}
               onClick={() => setActiveCategory(cat)}
-              className={`px-5 py-2.5 rounded-xl whitespace-nowrap text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${
+              className={`px-5 py-2.5 rounded-full whitespace-nowrap text-[10px] font-black uppercase tracking-widest transition-all duration-300 border ${
                 activeCategory === cat 
-                ? 'bg-white text-brand-secondary shadow-lg' 
-                : 'bg-white/5 text-white/40 border border-white/10 hover:border-white/20'
+                ? 'bg-brand-primary text-white border-transparent shadow-lg' 
+                : 'bg-white text-text-muted border-black/5 hover:border-black/10'
               }`}
             >
               {cat === 'All' ? t('home.all') : t('db_categories.' + cat, { defaultValue: cat })}
@@ -387,12 +380,12 @@ export default function Home() {
 
       <div className="grid gap-6">
         {filteredDeals.length === 0 && !loading ? (
-          <div className="bg-white/5 border-2 border-dashed border-white/10 rounded-[32px] py-20 text-center px-10 backdrop-blur-md">
-            <div className="w-20 h-20 bg-white/5 text-white/20 rounded-full flex items-center justify-center mx-auto mb-6">
+          <div className="bg-white border-2 border-dashed border-black/5 rounded-[40px] py-20 text-center px-10 shadow-sm">
+            <div className="w-20 h-20 bg-neutral-100 text-neutral-300 rounded-full flex items-center justify-center mx-auto mb-6">
               <Search size={40} />
             </div>
-            <h3 className="text-xl font-bold text-white mb-2">{t('home.noDealsFound')}</h3>
-            <p className="text-white/40 text-sm leading-relaxed">
+            <h3 className="text-xl font-bold text-text-main mb-2">{t('home.noDealsFound')}</h3>
+            <p className="text-text-muted text-sm leading-relaxed">
               {t('home.noDealsFound')}
             </p>
             { (searchQuery || activeCategory !== 'All') && (
@@ -411,61 +404,103 @@ export default function Home() {
             const endDateString = deal.end_date ? new Date(deal.end_date).toLocaleDateString() : null;
 
             return (
-            <div 
-              key={`${deal.deal_id}-${deal.branch_name || idx}`}
-              onClick={() => setSelectedDeal(deal)}
-              className="bg-white/10 backdrop-blur-lg rounded-[32px] shadow-xl border border-white/20 overflow-hidden hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 group cursor-pointer"
-            >
-              <div className="p-6">
-                <div className="flex justify-between items-start mb-5">
-                  <div className="flex items-center gap-4">
-                    <div className="w-14 h-14 bg-white rounded-2xl shadow-inner flex items-center justify-center p-1.5 overflow-hidden flex-shrink-0">
-                       {deal.tenant_logo ? (
-                         <img src={deal.tenant_logo} alt="Logo" className="w-full h-full object-contain" />
-                       ) : (
-                        <div className="w-full h-full bg-brand-primary/10 flex items-center justify-center text-brand-primary font-bold text-xl">
-                           {deal.tenant_name?.[0] || <Tag size={24} />}
-                         </div>
-                       )}
-                    </div>
-                    <div>
-                      <p className="text-[10px] text-white/40 font-black uppercase tracking-widest mb-1">{deal.tenant_name}</p>
-                      <h3 className="font-extrabold text-white text-xl leading-snug group-hover:text-brand-primary transition-colors">
-                        {deal.deal_title}
-                      </h3>
-                      {endDateString && (
-                        <p className="text-white/50 text-[10px] font-black uppercase mt-1 flex items-center gap-1">
-                          <Clock size={10} /> {t('home.expires')} {endDateString}
-                        </p>
+              <div 
+                key={`${deal.deal_id}-${deal.branch_name || idx}`}
+                onClick={() => setSelectedDeal(deal)}
+                className="bg-white rounded-[32px] shadow-premium hover:shadow-card-hover hover:-translate-y-1 transition-all duration-500 group cursor-pointer flex flex-col h-full relative"
+              >
+                {/* Hero Image Section */}
+                <div className="relative h-44 w-full bg-neutral-100 rounded-t-[32px] overflow-hidden">
+                  <SafeImage 
+                    src={deal.image_url} 
+                    alt="" 
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                    placeholder={
+                      <div className="w-full h-full bg-gradient-to-br from-neutral-50 to-neutral-100 flex flex-col items-center justify-center text-neutral-300">
+                        <Tag size={40} strokeWidth={1} className="opacity-20 mb-2" />
+                        <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-30">Nabbu</p>
+                      </div>
+                    }
+                  />
+                  
+                  {/* Floating Hook Label */}
+                  <div className="absolute top-6 left-6 z-10">
+                    <div className="bg-white/95 px-4 py-2 rounded-2xl shadow-lg border border-black/5 flex items-center gap-2">
+                      {deal.deal_title?.includes('%') ? (
+                        <>
+                          <div className="w-2 h-2 bg-brand-secondary rounded-full"></div>
+                          <span className="text-[11px] font-black text-text-main uppercase tracking-wider">
+                            {deal.deal_title.match(/\d+%/)[0]}
+                          </span>
+                        </>
+                      ) : (
+                        <div className="flex items-center gap-1.5">
+                          <Tag size={12} className="text-brand-primary" />
+                          <span className="text-[10px] font-black text-brand-primary uppercase tracking-tighter">Nabbu</span>
+                        </div>
                       )}
                     </div>
                   </div>
-                  <span className="bg-white text-brand-secondary text-[10px] uppercase font-black px-3 py-1.5 rounded-xl whitespace-nowrap shadow-lg flex-shrink-0">
-                    {Math.round(deal.distance / 100) / 10}km
-                  </span>
-                </div>
-                
-                <div className="pt-5 border-t border-white/10 flex items-center justify-between">
-                  <div className="flex flex-col items-start min-w-0 pr-3">
-                     <p className="text-white/60 text-xs font-medium flex items-center gap-1.5">
-                       <MapPin size={12} className="text-brand-primary" />
-                       <span className="truncate max-w-[150px]">{deal.branch_name}</span>
-                     </p>
+
+                  {/* Corner Category Tag */}
+                  <div className="absolute top-4 right-4 z-10">
+                     <div className="bg-brand-primary text-white text-[9px] font-black px-3 py-1.5 rounded-full uppercase tracking-tighter shadow-lg shadow-brand-primary/20">
+                        {t(`db_categories.${deal.category.charAt(0).toUpperCase() + deal.category.slice(1).toLowerCase()}`) || deal.category}
+                     </div>
                   </div>
-                  <button 
-                    onClick={(e) => { e.stopPropagation(); setSelectedDeal(deal); }}
-                    className={`flex-shrink-0 whitespace-nowrap font-black px-5 py-3 rounded-2xl transition-all flex items-center justify-center gap-2 border text-xs uppercase tracking-wider ${
-                      isClaimed 
-                        ? 'bg-white/10 text-brand-primary border-brand-primary/30 hover:bg-white/20' 
-                        : 'bg-gradient-to-r from-brand-primary to-brand-secondary text-white shadow-xl shadow-brand-primary/20 hover:opacity-90 border-transparent'
-                    }`}
-                  >
-                    {isClaimed ? t('home.viewOffer') : t('home.viewDetails')}
-                  </button>
+                </div>
+
+                <div className="p-6 flex-1 flex flex-col">
+                  <div className="flex justify-between items-start mb-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center p-1 border border-black/5 overflow-hidden flex-shrink-0">
+                         {deal.tenant_logo ? (
+                           <img src={deal.tenant_logo} alt="Logo" className="w-full h-full object-contain" />
+                         ) : (
+                          <div className="w-full h-full bg-brand-primary/5 flex items-center justify-center text-brand-primary font-bold text-xs">
+                             {deal.tenant_name?.[0] || 'N'}
+                           </div>
+                         )}
+                      </div>
+                      <div>
+                          <p className="text-[10px] text-text-muted font-black uppercase tracking-[0.15em] mb-0.5">{deal.tenant_name}</p>
+                          <div className="flex items-center gap-2">
+                            <span className="text-brand-secondary text-[10px] font-black bg-brand-secondary/5 px-2 py-0.5 rounded-md">
+                              {Math.round(deal.distance / 100) / 10}km
+                            </span>
+                            {endDateString && (
+                              <p className="text-text-muted text-[10px] font-bold flex items-center gap-1">
+                                <Clock size={10} /> {endDateString}
+                              </p>
+                            )}
+                          </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <h3 className="font-bold text-text-main text-xl leading-snug group-hover:text-brand-primary transition-colors mb-4 line-clamp-2">
+                    {deal.deal_title}
+                  </h3>
+                  
+                  <div className="mt-auto pt-5 border-t border-black/5 flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-text-muted">
+                      <MapPin size={12} className="text-brand-primary" />
+                      <span className="text-[11px] font-bold truncate max-w-[140px] uppercase tracking-tighter">{deal.branch_name}</span>
+                    </div>
+                    <div 
+                      className={`flex-shrink-0 rounded-full font-black px-6 py-2.5 transition-all text-[11px] uppercase tracking-wider ${
+                        isClaimed 
+                          ? 'bg-brand-primary/5 text-brand-primary' 
+                          : 'bg-brand-secondary text-white shadow-md shadow-brand-secondary/20 transition-all'
+                      }`}
+                    >
+                      {isClaimed ? t('home.viewOffer') : t('home.viewDetails')}
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
-          )})
+            );
+          })
         )}
       </div>
 
@@ -476,7 +511,7 @@ export default function Home() {
             <button
               onClick={loadMore}
               disabled={isFetchingMore}
-              className="flex items-center gap-3 px-8 py-4 bg-white/10 border border-white/20 text-white font-bold rounded-2xl hover:bg-white/15 transition-all active:scale-95 disabled:opacity-50"
+              className="flex items-center gap-3 px-8 py-4 bg-white border border-black/5 text-text-main font-bold rounded-full hover:bg-neutral-50 transition-all active:scale-95 disabled:opacity-50 shadow-sm"
             >
               {isFetchingMore ? (
                 <><Loader2 size={18} className="animate-spin text-brand-primary" /> {t('home.loadingMore')}</>
@@ -504,6 +539,7 @@ export default function Home() {
           description={selectedDeal.description}
           imageUrl={selectedDeal.image_url}
           endDate={selectedDeal.end_date}
+          category={selectedDeal.category}
           branches={(dealBranches && dealBranches.length > 0) ? dealBranches : [{ branch_name: selectedDeal.branch_name, ...selectedDeal }]}
           actionButtons={[
             {

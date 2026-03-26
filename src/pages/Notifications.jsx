@@ -80,7 +80,7 @@ export default function Notifications() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center py-20">
+      <div className="flex justify-center items-center py-20 animate-pulse">
         <div className="w-8 h-8 border-4 border-brand-primary border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
@@ -89,14 +89,14 @@ export default function Notifications() {
   return (
     <div className="space-y-8 pb-24">
       <header className="flex items-center gap-4">
-        <button onClick={() => navigate(-1)} className="p-2.5 -ml-2 text-white/40 hover:text-white transition-colors bg-white/5 rounded-2xl border border-white/5">
+        <button onClick={() => navigate(-1)} className="p-3 bg-white text-text-muted hover:text-text-main rounded-2xl transition-all border border-black/5 shadow-sm">
           <ChevronLeft size={24} />
         </button>
-        <h2 className="text-3xl font-black text-white tracking-tight">{t('notifications.title')}</h2>
+        <h2 className="text-3xl font-black text-text-main tracking-tight">{t('notifications.title')}</h2>
         {notifications.some(n => !n.is_read) && (
           <button 
             onClick={markAllAsRead}
-            className="ml-auto text-[10px] font-black uppercase tracking-widest text-brand-primary bg-white/10 px-4 py-2 rounded-xl hover:bg-white/20 transition-all border border-white/10 backdrop-blur-md"
+            className="ml-auto text-[10px] font-black uppercase tracking-widest text-brand-primary bg-brand-primary/5 px-4 py-2 rounded-xl hover:bg-brand-primary/10 transition-all border border-brand-primary/10"
           >
             {t('notifications.markAllRead')}
           </button>
@@ -105,17 +105,17 @@ export default function Notifications() {
 
       <div className="grid gap-4">
         {notifications.length === 0 ? (
-          <div className="bg-white/5 border border-dashed border-white/10 rounded-[48px] py-24 text-center px-8 backdrop-blur-sm">
-            <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-6 border border-white/5">
-              <Bell size={40} className="text-white/10" />
+          <div className="bg-white border border-dashed border-black/5 rounded-[48px] py-24 text-center px-8 shadow-sm">
+            <div className="w-20 h-20 bg-neutral-50 rounded-full flex items-center justify-center mx-auto mb-6 border border-black/5">
+              <Bell size={40} className="text-neutral-200" />
             </div>
-            <h3 className="text-2xl font-black text-white mb-3">{t('notifications.emptyTitle')}</h3>
-            <p className="text-white/40 text-sm max-w-xs mx-auto mb-10 leading-relaxed font-medium">
+            <h3 className="text-2xl font-black text-text-main mb-3">{t('notifications.emptyTitle')}</h3>
+            <p className="text-text-muted text-sm max-w-xs mx-auto mb-10 leading-relaxed font-medium">
               {t('notifications.emptyDesc')}
             </p>
             <Link 
               to="/" 
-              className="inline-block bg-gradient-to-r from-brand-primary to-brand-secondary text-white text-[11px] font-black uppercase tracking-[0.2em] px-10 py-5 rounded-[32px] hover:opacity-90 transition-all shadow-xl active:scale-95 border border-white/10 shadow-brand-primary/20"
+              className="inline-block bg-brand-secondary text-white text-[11px] font-black uppercase tracking-[0.2em] px-10 py-5 rounded-full hover:bg-brand-primary transition-all shadow-lg shadow-brand-secondary/20 active:scale-95"
             >
               {t('notifications.backToExplore')}
             </Link>
@@ -125,20 +125,20 @@ export default function Notifications() {
             <div 
               key={n.id}
               onClick={() => markAsRead(n.id)}
-              className={`group relative overflow-hidden p-6 rounded-[32px] border transition-all flex gap-5 items-start cursor-pointer ${
+              className={`group relative overflow-hidden p-6 rounded-[32px] border transition-all flex gap-5 items-start cursor-pointer shadow-sm ${
                 n.is_read 
-                ? 'bg-white/5 border-white/5 opacity-60 grayscale-[0.3]' 
-                : 'bg-white/10 backdrop-blur-lg border-white/20 shadow-xl shadow-brand-secondary/20'
+                ? 'bg-neutral-50 border-black/5 opacity-60 grayscale-[0.3]' 
+                : 'bg-white border-black/5'
               }`}
             >
-              <div className={`w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0 border border-white/10 ${
-                n.type === 'expiration' ? 'bg-orange-500/10 text-orange-400' : 'bg-blue-500/10 text-blue-400'
+              <div className={`w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0 border ${
+                n.type === 'expiration' ? 'bg-orange-50 text-orange-500 border-orange-100' : 'bg-brand-primary/5 text-brand-primary border-brand-primary/10'
               }`}>
                 {n.type === 'expiration' ? <Clock size={24} /> : <Info size={24} />}
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex justify-between items-start mb-1">
-                  <h4 className={`text-base font-black truncate pr-6 ${n.is_read ? 'text-white/60' : 'text-white'}`}>
+                  <h4 className={`text-base font-black truncate pr-6 ${n.is_read ? 'text-text-muted' : 'text-text-main'}`}>
                     {n.title}
                   </h4>
                   {!n.is_read && (
@@ -148,15 +148,15 @@ export default function Notifications() {
                     </span>
                   )}
                 </div>
-                <p className="text-sm text-white/40 leading-relaxed mb-4 font-medium">{n.message}</p>
+                <p className="text-sm text-text-muted leading-relaxed mb-4 font-medium">{n.message}</p>
                 <div className="flex items-center justify-between">
-                  <span className="text-[10px] text-white/30 font-black uppercase tracking-widest flex items-center gap-2">
-                    <CheckCircle size={12} className={n.is_read ? 'text-green-500' : 'text-white/20'} />
+                  <span className="text-[10px] text-text-muted/50 font-black uppercase tracking-widest flex items-center gap-2">
+                    <CheckCircle size={12} className={n.is_read ? 'text-brand-secondary' : 'text-neutral-200'} />
                     {new Date(n.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
                   </span>
                   <button 
                     onClick={(e) => { e.stopPropagation(); deleteNotification(n.id); }}
-                    className="p-2 text-white/20 hover:text-red-400 hover:bg-red-500/10 rounded-xl transition-all"
+                    className="p-2 text-text-muted/30 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
                   >
                     <Trash2 size={16} />
                   </button>

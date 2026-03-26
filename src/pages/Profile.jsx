@@ -2,7 +2,7 @@ import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, Mail, Shield, LogOut, Wallet, CheckCircle, Clock, ChevronRight, Loader2, Calendar, Users, AlertCircle, X, Pencil, Settings } from 'lucide-react';
+import { User, Mail, Shield, LogOut, Wallet, CheckCircle, Clock, ChevronRight, Loader2, Calendar, Users, AlertCircle, X, Pencil, Settings, Ticket } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 export default function Profile() {
@@ -138,8 +138,8 @@ export default function Profile() {
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center py-20 animate-pulse">
-        <Loader2 size={48} className="text-white/20 mb-4 animate-spin" />
-        <p className="text-white/40 font-bold uppercase tracking-widest text-[10px]">{t('profile.preparingProfile')}</p>
+        <Loader2 size={48} className="text-text-muted/20 mb-4 animate-spin" />
+        <p className="text-text-muted font-black uppercase tracking-widest text-[10px]">{t('profile.preparingProfile')}</p>
       </div>
     );
   }
@@ -168,129 +168,152 @@ export default function Profile() {
     <div className="space-y-8 pb-24">
       {/* Header / Identity */}
       <section className="text-center pt-8">
-        <div className="relative inline-block mb-6">
-          <div className="w-28 h-28 bg-gradient-to-tr from-brand-primary to-brand-secondary rounded-[40px] flex items-center justify-center text-white shadow-2xl shadow-brand-primary/20 mx-auto border-4 border-white/20 overflow-hidden backdrop-blur-md">
+        <div className="relative inline-block mb-10 group">
+          {/* 3D Background Plate */}
+          <div className="absolute inset-0 bg-brand-primary/10 rounded-[44px] blur-2xl group-hover:blur-3xl transition-all duration-500 opacity-50 group-hover:opacity-80"></div>
+          <div className="absolute inset-0 bg-gradient-to-br from-brand-primary/20 via-transparent to-brand-secondary/20 rounded-[44px] rotate-6 group-hover:rotate-12 transition-transform duration-700"></div>
+          
+          <div className="relative w-32 h-32 bg-white rounded-[44px] flex items-center justify-center text-brand-primary shadow-premium mx-auto border border-black/5 overflow-hidden group-hover:-translate-y-2 group-hover:rotate-2 transition-all duration-500 z-10">
             {displayAvatar ? (
                <img 
                  src={displayAvatar} 
                  alt="Profile" 
-                 className="w-full h-full object-cover p-1.5" 
+                 className="w-full h-full object-cover p-2 group-hover:scale-110 transition-transform duration-700" 
                  onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }}
                />
             ) : null}
-            <div className="hidden w-full h-full items-center justify-center text-3xl font-black uppercase">
+            <div className="hidden w-full h-full items-center justify-center text-4xl font-black uppercase">
                {getInitials(profile.full_name)}
             </div>
           </div>
+          
           <button 
             onClick={() => setIsEditing(true)}
-            className="absolute bottom-2 -right-2 bg-white text-brand-secondary p-2.5 rounded-2xl shadow-xl border border-white/20 hover:scale-110 transition-transform flex items-center justify-center"
+            className="absolute -bottom-2 -right-2 bg-white text-brand-primary p-3 rounded-2xl shadow-xl border border-black/5 hover:bg-brand-primary hover:text-white hover:scale-110 transition-all z-20"
           >
-             <Pencil size={16} />
+             <Pencil size={18} />
           </button>
         </div>
-        <h2 className="text-3xl font-black text-white tracking-tight">{profile.full_name || t('profile.defaultName')}</h2>
+        <h2 className="text-3xl font-black text-text-main tracking-tight">{profile.full_name || t('profile.defaultName')}</h2>
         <div className="flex items-center justify-center gap-3 mt-3">
-          <span className="bg-white/10 text-brand-primary text-[10px] uppercase font-black px-3 py-1.5 rounded-xl border border-white/10 backdrop-blur-md">
+          <span className="bg-brand-primary/5 text-brand-primary text-[10px] uppercase font-black px-3 py-1.5 rounded-xl border border-brand-primary/10">
             {profile.role?.replace('_', ' ')}
           </span>
-          <span className="text-white/40 text-xs font-bold flex items-center gap-1.5">
+          <span className="text-text-muted text-xs font-bold flex items-center gap-1.5">
             <Shield size={14} className="text-brand-primary" /> {t('profile.verifiedMember')}
           </span>
         </div>
       </section>
 
-      {/* Stats Summary - New Glass Grid */}
-      <div className="grid grid-cols-2 gap-4">
-        <div className="bg-white/5 border border-white/10 rounded-3xl p-5 backdrop-blur-md">
-          <p className="text-[10px] text-white/30 font-black uppercase tracking-widest mb-1">{t('profile.activeDeals')}</p>
-          <p className="text-2xl font-black text-white">{stats.pending}</p>
-        </div>
-        <div className="bg-white/5 border border-white/10 rounded-3xl p-5 backdrop-blur-md">
-          <p className="text-[10px] text-white/30 font-black uppercase tracking-widest mb-1">{t('profile.redeemed')}</p>
-          <p className="text-2xl font-black text-green-400">{stats.redeemed}</p>
-        </div>
-      </div>
-
-      {/* Details & Info in a Glass Container */}
-      <section className="bg-white/10 backdrop-blur-lg rounded-[40px] shadow-xl border border-white/20 overflow-hidden divide-y divide-white/5">
-        <div 
-          onClick={() => setIsEditing(true)}
-          className="p-6 flex items-center justify-between group cursor-pointer hover:bg-white/5 transition-all"
-        >
-          <div className="flex items-center gap-5">
-            <div className="w-12 h-12 bg-white/5 text-brand-primary rounded-2xl flex items-center justify-center border border-white/10 group-hover:bg-white/10 transition-colors">
-              <Calendar size={20} />
+      {/* Stats Summary Removed - Integrated below */}
+      <section className="space-y-4">
+        <h3 className="text-[10px] text-text-muted font-black uppercase tracking-[0.2em] ml-2">{t('profile.accountInfo', { defaultValue: 'Información de Cuenta' })}</h3>
+        <div className="bg-white rounded-[40px] shadow-premium border border-black/5 overflow-hidden divide-y divide-black/5">
+          <div onClick={() => setIsEditing(true)} className="p-6 flex items-center justify-between group cursor-pointer hover:bg-neutral-50 transition-all">
+            <div className="flex items-center gap-5">
+              <div className="w-12 h-12 bg-brand-primary/5 text-brand-primary rounded-2xl flex items-center justify-center border border-brand-primary/10 group-hover:bg-brand-primary/10 transition-colors">
+                <Calendar size={20} />
+              </div>
+              <div>
+                <p className="text-[11px] text-text-muted uppercase font-black tracking-widest mb-0.5">{t('profile.birthday')}</p>
+                <p className="text-base font-bold text-text-main">
+                  {profile.dob ? new Date(profile.dob + 'T12:00:00').toLocaleDateString() : t('profile.setBirthday')}
+                </p>
+              </div>
             </div>
-            <div>
-              <p className="text-[11px] text-white/40 uppercase font-black tracking-widest mb-0.5">{t('profile.birthday')}</p>
-              <p className="text-base font-bold text-white">
-                {profile.dob ? new Date(profile.dob + 'T12:00:00').toLocaleDateString() : t('profile.setBirthday')}
-              </p>
-            </div>
+            <ChevronRight size={18} className="text-text-muted/30 group-hover:text-text-main transition-colors" />
           </div>
-          <ChevronRight size={18} className="text-white/20 group-hover:text-white transition-colors" />
-        </div>
 
-        <div 
-          onClick={() => setIsEditing(true)}
-          className="p-6 flex items-center justify-between group cursor-pointer hover:bg-white/5 transition-all"
-        >
-          <div className="flex items-center gap-5">
-            <div className="w-12 h-12 bg-white/5 text-pink-400 rounded-2xl flex items-center justify-center border border-white/10 group-hover:bg-white/10 transition-colors">
-              <Users size={20} />
+          <div onClick={() => setIsEditing(true)} className="p-6 flex items-center justify-between group cursor-pointer hover:bg-neutral-50 transition-all">
+            <div className="flex items-center gap-5">
+              <div className="w-12 h-12 bg-brand-primary/5 text-brand-primary rounded-2xl flex items-center justify-center border border-brand-primary/10 group-hover:bg-brand-primary/10 transition-colors">
+                <Users size={20} />
+              </div>
+              <div>
+                <p className="text-[11px] text-text-muted uppercase font-black tracking-widest mb-0.5">{t('profile.gender')}</p>
+                <p className="text-base font-bold text-text-main capitalize">
+                  {profile.gender ? t(`profile.${profile.gender}`) : t('profile.preferNotToSay')}
+                </p>
+              </div>
             </div>
-            <div>
-              <p className="text-[11px] text-white/40 uppercase font-black tracking-widest mb-0.5">{t('profile.gender')}</p>
-              <p className="text-base font-bold text-white capitalize">
-                {profile.gender ? t(`profile.${profile.gender}`) : t('profile.preferNotToSay')}
-              </p>
-            </div>
+            <ChevronRight size={18} className="text-text-muted/30 group-hover:text-text-main transition-colors" />
           </div>
-          <ChevronRight size={18} className="text-white/20 group-hover:text-white transition-colors" />
-        </div>
 
-        <div className="p-6 flex items-center justify-between group bg-white/5">
-          <div className="flex items-center gap-5">
-            <div className="w-12 h-12 bg-white/5 text-white/30 rounded-2xl flex items-center justify-center border border-white/10">
+          <div className="p-6 flex items-center gap-5 bg-neutral-50/50">
+            <div className="w-12 h-12 bg-white text-text-muted/20 rounded-2xl flex items-center justify-center border border-black/5">
               <Mail size={20} />
             </div>
-            <div>
-              <p className="text-[11px] text-white/40 uppercase font-black tracking-widest mb-0.5">{t('profile.email')}</p>
-              <p className="text-base font-bold text-white/70">{user.email}</p>
+            <div className="min-w-0">
+              <p className="text-[11px] text-text-muted uppercase font-black tracking-widest mb-0.5">{t('profile.email')}</p>
+              <p className="text-sm font-bold text-text-muted/70 truncate">{user.email}</p>
             </div>
           </div>
+        </div>
+      </section>
+      
+      {/* Coupon History Section */}
+      <section className="space-y-4">
+        <h3 className="text-[10px] text-text-muted font-black uppercase tracking-[0.2em] ml-2">{t('profile.couponHistory')}</h3>
+        <div className="grid grid-cols-3 gap-3">
+          <button 
+            onClick={() => navigate('/coupons')}
+            className="bg-white border border-black/5 rounded-3xl p-4 text-left group hover:border-brand-primary/30 transition-all shadow-sm active:scale-95 flex flex-col items-center text-center"
+          >
+            <div className="w-10 h-10 bg-brand-primary/5 text-brand-primary rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+              <Ticket size={20} />
+            </div>
+            <p className="text-[11px] font-black text-text-main line-clamp-1">{t('profile.activeDeals')}</p>
+            <p className="text-sm font-black text-brand-primary mt-1">{stats.pending}</p>
+          </button>
+
+          <button 
+            onClick={() => navigateToCoupons('redeemed')}
+            className="bg-white border border-black/5 rounded-3xl p-4 text-left group hover:border-brand-secondary/30 transition-all shadow-sm active:scale-95 flex flex-col items-center text-center"
+          >
+            <div className="w-10 h-10 bg-brand-secondary/10 text-brand-secondary rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+              <CheckCircle size={20} />
+            </div>
+            <p className="text-[11px] font-black text-text-main line-clamp-1">{t('profile.redeemed')}</p>
+            <p className="text-sm font-black text-brand-secondary mt-1">{stats.redeemed}</p>
+          </button>
+          
+          <button 
+            onClick={() => navigateToCoupons('expired')}
+            className="bg-white border border-black/5 rounded-3xl p-4 text-left group hover:border-black/20 transition-all shadow-sm active:scale-95 flex flex-col items-center text-center"
+          >
+            <div className="w-10 h-10 bg-neutral-100 text-text-muted rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+              <Clock size={20} />
+            </div>
+            <p className="text-[11px] font-black text-text-main line-clamp-1">{t('profile.expired')}</p>
+            <p className="text-sm font-black text-text-muted mt-1">{stats.expired}</p>
+          </button>
         </div>
       </section>
 
       {/* Edit Modal Refined */}
       {isEditing && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-bg-end/60 backdrop-blur-xl animate-in fade-in duration-500 overflow-hidden">
-          {/* Backdrop Glows */}
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-brand-primary/20 rounded-full blur-[120px] animate-pulse"></div>
-          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-brand-secondary/20 rounded-full blur-[120px] animate-pulse"></div>
-          
-          <div className="bg-white/10 backdrop-blur-3xl w-full max-w-lg rounded-t-[64px] border-t border-x border-white/20 shadow-[0_-20px_50px_-10px_rgba(0,0,0,0.5)] overflow-hidden animate-in slide-in-from-bottom-full duration-700 max-h-[92vh] flex flex-col relative">
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 backdrop-blur-sm animate-in fade-in duration-500 overflow-hidden">
+          <div className="bg-white w-full max-w-lg rounded-t-[64px] border-t border-black/5 shadow-22xl overflow-hidden animate-in slide-in-from-bottom-full duration-700 max-h-[92vh] flex flex-col relative">
             {/* Grab Handle */}
-            <div className="w-12 h-1.5 bg-white/20 rounded-full mx-auto mt-6 mb-2"></div>
+            <div className="w-12 h-1.5 bg-black/5 rounded-full mx-auto mt-6 mb-2"></div>
             
             <form onSubmit={handleSaveProfile} className="p-8 pb-12 overflow-y-auto scrollbar-hide">
               <div className="flex justify-between items-center mb-8">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-brand-primary/10 rounded-xl flex items-center justify-center text-brand-primary">
+                  <div className="w-10 h-10 bg-brand-primary/5 rounded-xl flex items-center justify-center text-brand-primary">
                     <Settings size={22} />
                   </div>
-                  <h3 className="text-2xl font-black text-white tracking-tight">{t('profile.identitySettings')}</h3>
+                  <h3 className="text-2xl font-black text-text-main tracking-tight">{t('profile.identitySettings')}</h3>
                 </div>
-                <button type="button" onClick={() => setIsEditing(false)} className="text-white/30 hover:text-white transition-colors p-2.5 bg-white/5 rounded-xl border border-white/5">
+                <button type="button" onClick={() => setIsEditing(false)} className="text-text-muted hover:text-text-main transition-colors p-2.5 bg-neutral-100 rounded-xl border border-black/5">
                   <X size={20} />
                 </button>
               </div>
 
               <div className="space-y-8">
-                {/* Avatar Selection Glassy Scroll */}
-                <div className="bg-white/5 backdrop-blur-md rounded-[40px] p-6 border border-white/10 shadow-inner">
-                  <label className="block text-[10px] font-black text-white/40 uppercase tracking-[0.25em] mb-5 ml-2">{t('profile.identityPersona')}</label>
+                {/* Avatar Selection Light Scroll */}
+                <div className="bg-neutral-50 rounded-[40px] p-6 border border-black/5 shadow-inner">
+                  <label className="block text-[10px] font-black text-text-muted uppercase tracking-[0.25em] mb-5 ml-2">{t('profile.identityPersona')}</label>
                   <div className="max-h-[160px] overflow-y-auto px-1 py-1 scrollbar-hide">
                     <div className="grid grid-cols-4 gap-4">
                       {AVATAR_PRESETS.map((preset) => {
@@ -302,13 +325,13 @@ export default function Profile() {
                             type="button"
                             onClick={() => setEditForm({...editForm, avatar_url: url})}
                             className={`relative aspect-square rounded-[24px] overflow-hidden border-2 transition-all p-1.5 ${
-                              isSelected ? 'border-brand-primary bg-brand-primary/20 scale-110' : 'border-white/5 bg-white/5 hover:border-white/20'
+                              isSelected ? 'border-brand-primary bg-brand-primary/5 scale-110' : 'border-black/5 bg-white hover:border-black/10'
                             }`}
                           >
                             <img src={url} alt={preset.label} className="w-full h-full object-contain" />
                             {isSelected && (
-                               <div className="absolute inset-0 bg-brand-primary/10 backdrop-blur-[1px] flex items-center justify-center">
-                                 <div className="bg-white rounded-full p-1 shadow-lg shadow-brand-primary/50">
+                               <div className="absolute inset-0 bg-brand-primary/5 flex items-center justify-center">
+                                 <div className="bg-white rounded-full p-1 shadow-lg">
                                    <CheckCircle size={14} className="text-brand-primary" />
                                  </div>
                                </div>
@@ -320,40 +343,40 @@ export default function Profile() {
                   </div>
                 </div>
 
-                <div className="bg-white/5 backdrop-blur-md rounded-[40px] p-8 border border-white/10 space-y-8 shadow-inner">
+                <div className="bg-neutral-50 rounded-[40px] p-8 border border-black/5 space-y-8 shadow-inner">
                   <div>
-                    <label className="block text-[10px] font-black text-white/40 uppercase tracking-[0.25em] mb-3 ml-2">{t('profile.fullName')}</label>
+                    <label className="block text-[10px] font-black text-text-muted uppercase tracking-[0.25em] mb-3 ml-2">{t('profile.fullName')}</label>
                     <input 
                       type="text" 
                       value={editForm.full_name}
                       onChange={e => setEditForm({...editForm, full_name: e.target.value})}
-                      className="w-full bg-white/5 border border-white/10 rounded-[20px] px-6 py-5 text-sm font-bold text-white focus:ring-2 focus:ring-brand-primary/40 focus:bg-white/10 focus:border-brand-primary/20 outline-none transition-all placeholder:text-white/20"
+                      className="w-full bg-white border border-black/5 rounded-[20px] px-6 py-5 text-sm font-bold text-text-main focus:ring-2 focus:ring-brand-primary/10 transition-all placeholder:text-text-muted/30"
                       placeholder={t('profile.yourNamePlaceholder')}
                     />
                   </div>
 
                   <div className="grid grid-cols-2 gap-6">
                     <div>
-                      <label className="block text-[10px] font-black text-white/40 uppercase tracking-[0.25em] mb-3 ml-2">{t('profile.birthDate')}</label>
+                      <label className="block text-[10px] font-black text-text-muted uppercase tracking-[0.25em] mb-3 ml-2">{t('profile.birthDate')}</label>
                       <input 
                         type="date" 
                         value={editForm.dob}
                         onChange={e => setEditForm({...editForm, dob: e.target.value})}
-                        className="w-full bg-white/5 border border-white/10 rounded-[20px] px-6 py-5 text-xs font-bold text-white focus:ring-2 focus:ring-brand-primary/40 focus:bg-white/10 outline-none transition-all color-scheme-dark"
+                        className="w-full bg-white border border-black/5 rounded-[20px] px-6 py-5 text-sm font-bold text-text-main focus:ring-2 focus:ring-brand-primary/10 transition-all outline-none"
                       />
                     </div>
                     <div>
-                      <label className="block text-[10px] font-black text-white/40 uppercase tracking-[0.25em] mb-3 ml-2">{t('profile.gender')}</label>
+                      <label className="block text-[10px] font-black text-text-muted uppercase tracking-[0.25em] mb-3 ml-2">{t('profile.gender')}</label>
                       <div className="relative">
                         <select 
                           value={editForm.gender}
                           onChange={e => setEditForm({...editForm, gender: e.target.value})}
-                          className="w-full bg-white/5 border border-white/10 rounded-[20px] px-6 py-5 text-xs font-bold text-white focus:ring-2 focus:ring-brand-primary/40 focus:bg-white/10 outline-none transition-all appearance-none"
+                          className="w-full bg-white border border-black/5 rounded-[20px] px-6 py-5 text-sm font-bold text-text-main focus:ring-2 focus:ring-brand-primary/10 outline-none transition-all appearance-none"
                         >
-                          <option value="" className="bg-bg-end">{t('profile.select')}</option>
-                          <option value="male" className="bg-bg-end">{t('profile.male')}</option>
-                          <option value="female" className="bg-bg-end">{t('profile.female')}</option>
-                          <option value="other" className="bg-bg-end">{t('profile.other')}</option>
+                          <option value="">{t('profile.select')}</option>
+                          <option value="male">{t('profile.male')}</option>
+                          <option value="female">{t('profile.female')}</option>
+                          <option value="other">{t('profile.other')}</option>
                         </select>
                       </div>
                     </div>
@@ -365,14 +388,14 @@ export default function Profile() {
                 <button 
                   type="button" 
                   onClick={() => setIsEditing(false)}
-                  className="flex-1 bg-white/5 text-white/60 font-black py-5 rounded-[28px] hover:bg-white/10 transition-all text-[11px] uppercase tracking-[0.2em] border border-white/5"
+                  className="flex-1 bg-neutral-100 text-text-muted font-black py-5 rounded-full hover:bg-neutral-200 transition-all text-[11px] uppercase tracking-[0.2em] border border-black/5"
                 >
                   {t('profile.cancel')}
                 </button>
                 <button 
                   type="submit" 
                   disabled={saving}
-                  className="flex-1 bg-gradient-to-r from-brand-primary to-brand-secondary text-white font-black py-5 rounded-[28px] hover:opacity-90 transition-all text-[11px] uppercase tracking-[0.2em] shadow-xl shadow-brand-primary/20 disabled:opacity-50"
+                  className="flex-1 bg-brand-secondary text-white font-black py-5 rounded-full hover:bg-brand-primary transition-all text-[11px] uppercase tracking-[0.2em] shadow-lg shadow-brand-secondary/20 disabled:opacity-50"
                 >
                   {saving ? t('profile.syncing') : t('profile.updateProfile')}
                 </button>
@@ -382,11 +405,11 @@ export default function Profile() {
         </div>
       )}
 
-      {/* Sign Out With Red Glass Glow */}
+      {/* Sign Out With Modern Light Button */}
       <section className="pt-6">
         <button 
           onClick={logout}
-          className="w-full bg-red-500/10 text-red-400 font-extrabold py-6 rounded-[32px] border border-red-500/20 hover:bg-red-500/20 transition-all active:scale-[0.98] flex items-center justify-center gap-4 group shadow-xl shadow-red-500/5 backdrop-blur-md"
+          className="w-full bg-red-50 text-red-500 font-extrabold py-6 rounded-[32px] border border-red-100 hover:bg-red-100 transition-all active:scale-[0.98] flex items-center justify-center gap-4 group shadow-sm shadow-red-500/5"
         >
           <div className="p-2 bg-red-500/10 rounded-xl group-hover:scale-110 transition-transform">
              <LogOut size={22} />

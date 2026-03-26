@@ -1,5 +1,10 @@
 {
   "_name": "🇺🇸 English",
+  "common": {
+    "readMore": "Read More",
+    "showLess": "Show Less",
+    "back": "Back"
+  },
   "nav": {
     "explore": "Explore",
     "coupons": "Coupons",
@@ -46,7 +51,7 @@
   },
   "login": {
     "welcome": "Welcome to",
-    "subtitle": "Local deals, redeemed instantly",
+    "subtitle": "Your radar for local deals",
     "signInGoogle": "Continue with Google",
     "termsAgreed": "By continuing, you agree to our",
     "termsLink": "Terms of Use & Privacy Policy"
@@ -55,7 +60,7 @@
     "title": "QR Scanner",
     "scanToRedeem": "Scan to redeem",
     "scanInstruction": "Point the camera at the store's QR code",
-    "poweredBy": "Powered by RedeemGrid Scanner Engine",
+    "poweredBy": "Powered by Nabbu Scanner Engine",
     "codeDetected": "Code detected:",
     "processingCoupon": "Processing\nCoupon...",
     "offerRedeemedSuccess": "Offer successfully redeemed!",
@@ -73,16 +78,16 @@
     "title": "Terms & Privacy",
     "lastUpdated": "Last Updated: March 22, 2026",
     "sec1Title": "1. Acceptance of Terms",
-    "sec1Text": "By accessing and using RedeemGrid, you agree to be bound by these Terms of Use and our Privacy Policy. If you do not agree with any part of these terms, you must not use the application.",
+    "sec1Text": "By accessing and using Nabbu, you agree to be bound by these Terms of Use and our Privacy Policy. If you do not agree with any part of these terms, you must not use the application.",
     "sec2Title": "2. Geolocation Use",
-    "sec2Text": "RedeemGrid requires access to your real-time geographical location to show nearby deals. This data is processed ephemerally for querying purposes and is not shared with third parties for advertising.",
+    "sec2Text": "Nabbu requires access to your real-time geographical location to show nearby deals. This data is processed ephemerally for querying purposes and is not shared with third parties for advertising.",
     "sec3Title": "3. Nature of Offers",
     "sec3Text": "Coupons and offers are the sole responsibility of the issuing merchants. We do not guarantee immediate availability or quality of products offered by third parties.",
     "sec4Title": "4. Privacy & Data",
     "sec4Text": "We collect only the information necessary to manage your profile and benefits. Your data is protected using high-level encryption and security standards. We will never sell your personal information.",
     "sec5Title": "5. Privacy Policy",
     "sec5Text": "You have the right to access, rectify, or delete your data at any time from your profile. We are committed to transparency in handling your information in compliance with current data protection laws.",
-    "footer": "© 2026 RedeemGrid. All rights reserved. For legal inquiries or support, contact us at support@redeemgrid.com"
+    "footer": "© 2026 Nabbu. All rights reserved. For legal inquiries or support, contact us at support@nabbu.com"
   },
   "support": {
     "title": "Help Center",
@@ -172,6 +177,9 @@
     "verifiedMember": "Verified Member",
     "activeDeals": "Active Deals",
     "redeemed": "Redeemed",
+    "expired": "Expired",
+    "coupons": "coupons",
+    "couponHistory": "Coupon History",
     "setBirthday": "Set your birthday",
     "birthday": "Birthday",
     "gender": "Gender",

@@ -1,18 +1,24 @@
 @import "tailwindcss";
 
 @theme {
-  --color-brand-primary: #9333ea; /* purple-600 */
-  --color-brand-secondary: #4f46e5; /* indigo-600 */
+  --color-brand-primary: #007BFF; /* electric blue */
+  --color-brand-secondary: #00C853; /* accent green */
   
-  --color-bg-start: #1e1b4b; /* indigo-950 */
-  --color-bg-mid: #3b0764; /* purple-950 */
-  --color-bg-end: #020617; /* slate-950 */
+  --color-bg-page: #F0F2F5; /* slightly deeper grey for better card contrast */
+  --color-text-main: #1A1A1A; /* deeper black for contrast */
+  --color-text-muted: #667085; /* balanced muted text */
 }
 
 @layer base {
   body {
-    @apply bg-bg-end text-white antialiased;
+    @apply bg-bg-page text-text-main antialiased;
+    font-family: 'Inter', system-ui, sans-serif;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
   }
 
   /* Sleek scrollbar for glass containers */
@@ -46,5 +52,18 @@
 
   .animation-delay-4000 {
     animation-delay: 4s;
+  }
+
+  /* Premium Utilities */
+  .shadow-premium {
+    box-shadow: 0 12px 24px -6px rgba(0, 0, 0, 0.04), 0 4px 12px -2px rgba(0, 0, 0, 0.02);
+  }
+
+  .shadow-card-hover {
+    box-shadow: 0 20px 48px -12px rgba(0, 0, 0, 0.08), 0 8px 24px -4px rgba(0, 0, 0, 0.03);
+  }
+
+  .glass-light {
+    @apply bg-white/80 backdrop-blur-md border border-white/40 shadow-sm;
   }
 }

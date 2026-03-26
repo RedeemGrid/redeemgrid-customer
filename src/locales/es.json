@@ -1,5 +1,10 @@
 {
   "_name": "🇪🇸  Español",
+  "common": {
+    "readMore": "Ver Más",
+    "showLess": "Mostrar Menos",
+    "back": "Volver"
+  },
   "nav": {
     "explore": "Explorar",
     "coupons": "Cupones",
@@ -46,7 +51,7 @@
   },
   "login": {
     "welcome": "Bienvenido a",
-    "subtitle": "Ofertas locales, canjeadas al instante",
+    "subtitle": "Tu radar de ofertas locales",
     "signInGoogle": "Continuar con Google",
     "termsAgreed": "Al continuar, aceptas nuestros",
     "termsLink": "Términos de Uso y Política de Privacidad"
@@ -55,7 +60,7 @@
     "title": "Escáner QR",
     "scanToRedeem": "Escanea para canjear",
     "scanInstruction": "Apunta la cámara al código QR de la tienda",
-    "poweredBy": "Desarrollado por RedeemGrid Scanner Engine",
+    "poweredBy": "Desarrollado por Nabbu Scanner Engine",
     "codeDetected": "Código detectado:",
     "processingCoupon": "Procesando\nCupón...",
     "offerRedeemedSuccess": "¡Oferta canjeada exitosamente!",
@@ -73,16 +78,16 @@
     "title": "Términos y Privacidad",
     "lastUpdated": "Última actualización: 22 de marzo, 2026",
     "sec1Title": "1. Aceptación de los Términos",
-    "sec1Text": "Al acceder y utilizar RedeemGrid, usted acepta estar sujeto a estos Términos de Uso y a nuestra Política de Privacidad. Si no está de acuerdo con alguna parte de estos términos, no debe utilizar la aplicación.",
+    "sec1Text": "Al acceder y utilizar Nabbu, usted acepta estar sujeto a estos Términos de Uso y a nuestra Política de Privacidad. Si no está de acuerdo con alguna parte de estos términos, no debe utilizar la aplicación.",
     "sec2Title": "2. Uso de Geolocalización",
-    "sec2Text": "RedeemGrid requiere acceso a su ubicación geográfica en tiempo real para mostrar ofertas cercanas. Estos datos se procesan de forma efímera para la consulta y no se comparten con terceros para fines publicitarios.",
+    "sec2Text": "Nabbu requiere acceso a su ubicación geográfica en tiempo real para mostrar ofertas cercanas. Estos datos se procesan de forma efímera para la consulta y no se comparten con terceros para fines publicitarios.",
     "sec3Title": "3. Naturaleza de las Ofertas",
     "sec3Text": "Los cupones y ofertas son responsabilidad de los comercios emisores. No garantizamos la disponibilidad inmediata ni la calidad de los productos ofrecidos por terceros.",
     "sec4Title": "4. Privacidad y Datos",
     "sec4Text": "Recopilamos únicamente la información necesaria para gestionar su perfil y beneficios. Sus datos están protegidos mediante cifrado y estándares de seguridad de nivel bancario. Nunca venderemos su información personal.",
     "sec5Title": "5. Política de Privacidad",
     "sec5Text": "Usted tiene derecho a acceder, rectificar o eliminar sus datos en cualquier momento desde su perfil. Nos comprometemos a la transparencia en el manejo de su información conforme a las leyes de protección de datos vigentes.",
-    "footer": "© 2026 RedeemGrid. Todos los derechos reservados. Para dudas o consultas legales, contáctanos en support@redeemgrid.com"
+    "footer": "© 2026 Nabbu. All rights reserved. Para dudas o consultas legales, contáctanos en support@nabbu.com"
   },
   "support": {
     "title": "Centro de Ayuda",
@@ -171,7 +176,10 @@
     "defaultName": "Redentor",
     "verifiedMember": "Miembro Verificado",
     "activeDeals": "Ofertas Activas",
-    "redeemed": "Canjeado",
+    "redeemed": "Canjeados",
+    "expired": "Expirados",
+    "coupons": "cupones",
+    "couponHistory": "Historial de Cupones",
     "setBirthday": "Configurar fecha nacimiento",
     "birthday": "Cumpleaños",
     "gender": "Género",

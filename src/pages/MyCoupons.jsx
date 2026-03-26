@@ -6,6 +6,7 @@ import { Ticket, Clock, CheckCircle, ChevronLeft, X, AlertCircle, MapPin, Naviga
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import OfferDetailModal from '../components/OfferDetailModal';
+import SafeImage from '../components/SafeImage';
 
 export default function MyCoupons() {
   const { t } = useTranslation();
@@ -142,9 +143,9 @@ export default function MyCoupons() {
   };
 
   const statusColors = {
-    pending: 'bg-yellow-100 text-yellow-700 border-yellow-200',
-    redeemed: 'bg-green-100 text-green-700 border-green-200',
-    expired: 'bg-red-100 text-red-700 border-red-200',
+    pending: 'bg-brand-primary/10 text-brand-primary border-brand-primary/20',
+    redeemed: 'bg-brand-secondary/10 text-brand-secondary border-brand-secondary/20',
+    expired: 'bg-red-50 text-red-600 border-red-100',
   };
 
   const openInMaps = (branch) => {
@@ -157,7 +158,7 @@ export default function MyCoupons() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center py-20">
+      <div className="flex justify-center items-center py-20 animate-pulse">
         <div className="w-8 h-8 border-4 border-brand-primary border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
@@ -166,13 +167,13 @@ export default function MyCoupons() {
   return (
     <div className="space-y-8 pb-24">
       <header className="flex items-center gap-4">
-        <Link to="/" className="p-3 bg-white/5 text-white/60 hover:text-white hover:bg-white/10 rounded-2xl transition-all border border-white/10">
+        <Link to="/" className="p-3 bg-white text-text-muted hover:text-text-main rounded-2xl transition-all border border-black/5 shadow-sm">
           <ChevronLeft size={24} />
         </Link>
-        <h2 className="text-3xl font-black text-white tracking-tight">{t('coupons.title')}</h2>
+        <h2 className="text-3xl font-black text-text-main tracking-tight">{t('coupons.title')}</h2>
       </header>
 
-      <div className="flex bg-white/5 p-1.5 rounded-[22px] backdrop-blur-md border border-white/10">
+      <div className="flex glass-light p-1.5 rounded-[22px] shadow-sm">
         {['active', 'redeemed', 'expired'].map((f) => (
           <button
             key={f}
@@ -182,8 +183,8 @@ export default function MyCoupons() {
             }}
              className={`flex-1 py-3 rounded-[18px] text-[11px] font-black uppercase tracking-wider transition-all duration-300 ${
               currentFilter === f 
-                ? 'bg-white text-brand-secondary shadow-xl scale-105' 
-                : 'text-white/40 hover:text-white/70'
+                ? 'bg-brand-primary text-white shadow-lg scale-105' 
+                : 'text-text-muted hover:text-text-main'
             }`}
           >
             {t(`coupons.tab${f.charAt(0).toUpperCase() + f.slice(1)}`)}
@@ -198,10 +199,10 @@ export default function MyCoupons() {
             <button
               key={cat}
               onClick={() => setActiveCategory(cat)}
-              className={`px-5 py-2.5 rounded-xl whitespace-nowrap text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${
+              className={`px-5 py-2.5 rounded-full whitespace-nowrap text-[10px] font-black uppercase tracking-widest transition-all duration-300 border ${
                 activeCategory === cat 
-                ? 'bg-white text-brand-secondary shadow-lg' 
-                : 'bg-white/5 text-white/40 border border-white/10 hover:border-white/20'
+                ? 'bg-brand-primary text-white border-transparent shadow-lg' 
+                : 'bg-white text-text-muted border-black/5 hover:border-black/10'
               }`}
             >
               {cat === 'All' ? t('coupons.all') : t(`db_categories.${cat}`, { defaultValue: cat })}
@@ -212,15 +213,15 @@ export default function MyCoupons() {
 
       <div className="grid gap-5">
         {filteredCoupons.length === 0 ? (
-          <div className="bg-white/5 border-2 border-dashed border-white/10 rounded-[40px] py-20 text-center px-8 backdrop-blur-md">
-            <Ticket size={56} className="text-white/10 mx-auto mb-6" />
-            <h3 className="text-xl font-bold text-white mb-2">{t('coupons.noCouponsFound')}</h3>
-            <p className="text-white/40 text-sm mb-8 max-w-xs mx-auto">
+          <div className="bg-white border-2 border-dashed border-black/5 rounded-[40px] py-20 text-center px-8 shadow-sm">
+            <Ticket size={56} className="text-neutral-200 mx-auto mb-6" />
+            <h3 className="text-xl font-bold text-text-main mb-2">{t('coupons.noCouponsFound')}</h3>
+            <p className="text-text-muted text-sm mb-8 max-w-xs mx-auto">
               {t('coupons.noCouponsFilter')}
             </p>
             <Link 
               to="/" 
-              className="inline-block bg-gradient-to-r from-brand-primary to-brand-secondary text-white text-[11px] font-black uppercase tracking-widest px-10 py-5 rounded-2xl shadow-xl shadow-brand-primary/20 hover:opacity-90 transition-all active:scale-95 border border-white/10"
+              className="inline-block bg-brand-secondary text-white text-[11px] font-black uppercase tracking-widest px-10 py-5 rounded-full shadow-lg shadow-brand-secondary/20 hover:bg-brand-primary transition-all active:scale-95"
             >
               {t('coupons.exploreDeals')}
             </Link>
@@ -233,54 +234,83 @@ export default function MyCoupons() {
                 setSelectedCoupon(coupon);
                 setShowQrCode(false);
               }}
-              className={`bg-white/10 backdrop-blur-lg rounded-[32px] shadow-xl border border-white/20 overflow-hidden active:scale-[0.97] transition-all duration-300 cursor-pointer group ${
-                currentFilter !== 'active' ? 'grayscale opacity-60' : ''
+              className={`bg-white rounded-[32px] shadow-premium border border-black/[0.03] overflow-hidden hover:shadow-card-hover hover:border-brand-primary/10 active:scale-[0.97] transition-all duration-300 cursor-pointer group flex flex-col h-full ${
+                currentFilter !== 'active' ? 'grayscale opacity-70' : ''
               }`}
             >
-              <div className="p-6 flex gap-5">
-                <div className="w-18 h-18 bg-white rounded-2xl flex items-center justify-center flex-shrink-0 border border-white/10 shadow-inner overflow-hidden p-1.5">
-                  {coupon.tenants?.logo_url ? (
-                    <img src={coupon.tenants?.logo_url} alt="Logo" className="w-full h-full object-contain" />
-                  ) : (
-                    <div className="w-full h-full bg-brand-primary/10 flex items-center justify-center">
-                       <Ticket size={28} className="text-brand-primary" />
+              {/* Hero Image Section */}
+              <div className="relative h-40 w-full overflow-hidden bg-neutral-100">
+                <SafeImage 
+                  src={coupon.deals?.image_url} 
+                  alt={coupon.deals?.title} 
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
+                  placeholder={
+                    <div className="w-full h-full flex items-center justify-center text-neutral-200">
+                       <Ticket size={40} strokeWidth={1} className="animate-pulse" />
                     </div>
-                  )}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex justify-between items-start mb-2">
-                    <h4 className="font-extrabold text-white text-lg truncate pr-2 group-hover:text-brand-primary transition-colors">
-                      {coupon.deals?.title}
-                    </h4>
-                    {currentFilter === 'redeemed' && <CheckCircle size={18} className="text-green-400 flex-shrink-0" />}
-                  </div>
-                  
-                  <div className="flex items-center gap-2 mb-3">
-                    <p className="text-white/40 text-[10px] font-black uppercase tracking-widest">
-                       {coupon.tenants?.name}
-                    </p>
-                    <span className="w-1 h-1 bg-white/20 rounded-full"></span>
-                    <span className={`text-[9px] px-2 py-0.5 rounded-lg font-black uppercase tracking-tighter ${
-                      currentFilter === 'active' ? 'bg-brand-primary/20 text-brand-primary border border-brand-primary/30' : 'bg-white/5 text-white/40 border border-white/10'
+                  }
+                />
+                
+                {/* Status Badge Over Image */}
+                <div className="absolute top-4 right-4 z-10 flex flex-col gap-2 items-end">
+                   <div className={`text-[9px] px-3 py-1.5 rounded-full font-black uppercase tracking-tighter shadow-lg ${
+                      currentFilter === 'active' 
+                        ? 'bg-brand-primary text-white shadow-brand-primary/20' 
+                        : 'bg-neutral-800 text-white shadow-black/20'
                     }`}>
                        {t(`coupons.tab${currentFilter.charAt(0).toUpperCase() + currentFilter.slice(1)}`)}
-                    </span>
-                  </div>
+                   </div>
+                   
+                   {currentFilter === 'active' && getTimeRemaining(coupon.deals?.end_date) && (
+                      <div className="glass-light px-3 py-1.5 rounded-full shadow-lg border border-white/20 flex items-center gap-1.5 animate-pulse">
+                        <Clock size={12} className="text-orange-500" />
+                        <span className="text-[9px] font-black text-orange-600 uppercase tracking-tighter">
+                          {getTimeRemaining(coupon.deals?.end_date)}
+                        </span>
+                      </div>
+                   )}
+                </div>
 
-                  <div className="flex items-center justify-between mt-auto">
-                    <p className="text-[10px] text-white/30 font-bold uppercase tracking-wide">
-                      {currentFilter === 'expired' 
-                        ? `${t('coupons.expiredLabel')} ${new Date(coupon.deals?.end_date).toLocaleDateString()}`
-                        : `${t('coupons.claimedLabel')} ${new Date(coupon.created_at).toLocaleDateString()}`
-                      }
-                    </p>
-                    {currentFilter === 'active' && getTimeRemaining(coupon.deals?.end_date) && (
-                      <span className="text-[10px] px-2.5 py-1 rounded-xl bg-orange-500/10 text-orange-400 border border-orange-500/20 font-black uppercase flex items-center gap-1.5">
-                        <Clock size={12} /> {getTimeRemaining(coupon.deals?.end_date)}
-                      </span>
-                    )}
+                {/* Claimed/Redeemed Date Over Image */}
+                <div className="absolute bottom-4 left-4 z-10">
+                   <div className="bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-xl shadow-sm border border-white/20">
+                      <p className="text-[8px] text-text-muted font-black uppercase tracking-widest mb-0.5">
+                        {currentFilter === 'expired' ? t('coupons.expiredLabel') : t('coupons.claimedLabel')}
+                      </p>
+                      <p className="text-[10px] font-black text-text-main">
+                        {new Date(currentFilter === 'expired' ? coupon.deals?.end_date : coupon.created_at).toLocaleDateString()}
+                      </p>
+                   </div>
+                </div>
+              </div>
+
+              <div className="p-6 flex-1 flex flex-col">
+                <div className="flex justify-between items-start mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center p-1 border border-black/5 overflow-hidden flex-shrink-0">
+                       {coupon.tenants?.logo_url ? (
+                         <img src={coupon.tenants?.logo_url} alt="Logo" className="w-full h-full object-contain" />
+                       ) : (
+                        <div className="w-full h-full bg-brand-primary/5 flex items-center justify-center text-brand-primary font-bold text-xs">
+                           {coupon.tenants?.name?.[0] || 'N'}
+                         </div>
+                       )}
+                    </div>
+                    <div>
+                        <p className="text-[10px] text-text-muted font-black uppercase tracking-[0.15em] mb-0.5">{coupon.tenants?.name}</p>
+                        {currentFilter === 'redeemed' && (
+                          <div className="flex items-center gap-1 text-brand-secondary">
+                            <CheckCircle size={10} />
+                            <span className="text-[9px] font-black uppercase tracking-tighter">Canjeado</span>
+                          </div>
+                        )}
+                    </div>
                   </div>
                 </div>
+
+                <h3 className="font-bold text-text-main text-xl leading-snug group-hover:text-brand-primary transition-colors mb-2 line-clamp-2">
+                  {coupon.deals?.title}
+                </h3>
               </div>
             </div>
           ))

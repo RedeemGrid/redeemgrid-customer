@@ -88,16 +88,16 @@ export default function Scanner() {
       <div className="w-full flex items-center justify-between mb-8">
         <button 
           onClick={() => navigate(-1)}
-          className="p-3 bg-white/5 hover:bg-white/10 rounded-2xl border border-white/10 transition-all"
+          className="p-3 bg-white text-text-muted hover:text-text-main rounded-2xl border border-black/5 shadow-sm transition-all"
         >
           <ChevronLeft size={24} />
         </button>
-        <h2 className="text-xl font-black italic uppercase tracking-tighter">{t('scanner.title')}</h2>
+        <h2 className="text-xl font-black italic uppercase tracking-tighter text-text-main">{t('scanner.title')}</h2>
         <div className="w-12"></div>
       </div>
 
       {/* Scanner Container */}
-      <div className="w-full max-w-sm aspect-square bg-black/40 backdrop-blur-xl border-2 border-dashed border-white/20 rounded-[48px] overflow-hidden relative shadow-2xl flex items-center justify-center">
+      <div className="w-full max-w-sm aspect-square bg-neutral-900 border-2 border-dashed border-black/5 rounded-[48px] overflow-hidden relative shadow-premium flex items-center justify-center">
         {isProcessing && (
           <div className="absolute inset-0 z-20 bg-black/80 backdrop-blur-md flex flex-col items-center justify-center gap-4 animate-in fade-in zoom-in">
             <Loader2 size={48} className="text-brand-primary animate-spin" />
@@ -121,20 +121,20 @@ export default function Scanner() {
       </div>
 
       {/* Status Tip */}
-      <div className="mt-8 bg-white/5 backdrop-blur-md rounded-3xl p-6 border border-white/10 flex items-center gap-4 max-w-sm w-full transition-all hover:bg-white/10">
-        <div className="w-10 h-10 bg-brand-primary/20 rounded-2xl flex items-center justify-center text-brand-primary">
+      <div className="mt-8 bg-white/80 backdrop-blur-md rounded-3xl p-6 border border-black/5 shadow-premium flex items-center gap-4 max-w-sm w-full transition-all hover:bg-white">
+        <div className="w-10 h-10 bg-brand-primary/10 rounded-2xl flex items-center justify-center text-brand-primary">
           <Zap size={20} className="animate-pulse" />
         </div>
         <div className="flex-1">
-          <p className="text-sm font-bold text-white">{t('scanner.scanToRedeem')}</p>
-          <p className="text-[10px] text-white/40 font-bold uppercase tracking-widest leading-tight">
+          <p className="text-sm font-bold text-text-main">{t('scanner.scanToRedeem')}</p>
+          <p className="text-[10px] text-text-muted font-bold uppercase tracking-widest leading-tight">
             {t('scanner.scanInstruction')}
           </p>
         </div>
       </div>
 
       <div className="mt-10 text-center px-8">
-        <p className="text-[10px] text-white/20 font-black uppercase tracking-[0.3em]">
+        <p className="text-[10px] text-text-muted/40 font-black uppercase tracking-[0.3em]">
           {t('scanner.poweredBy')}
         </p>
       </div>
