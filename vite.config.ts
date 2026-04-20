@@ -55,13 +55,31 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
         runtimeCaching: [
           {
+            // Coupon/deal data: Try network first, fall back to cache
+            // This ensures active coupons are accessible in low-signal areas.
             urlPattern: /^https:\/\/.*\.supabase\.co\/.*/,
             handler: 'NetworkFirst',
             options: {
-              cacheName: 'supabase-cache',
+              cacheName: 'supabase-api-cache',
+              expiration: {
+                maxEntries: 150,
+                maxAgeSeconds: 60 * 60 * 24 * 3 // 3 days
+              },
+              cacheableResponse: {
+                statuses: [0, 200]
+              },
+              networkTimeoutSeconds: 5, // Fall back to cache after 5s timeout
+            }
+          },
+          {
+            // Tenant logos and deal images: Cache aggressively (rarely change)
+            urlPattern: /\.(png|jpg|jpeg|svg|webp)(\?.*)?$/,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'deal-images-cache',
               expiration: {
                 maxEntries: 100,
-                maxAgeSeconds: 60 * 60 * 24 * 7 // 1 week
+                maxAgeSeconds: 60 * 60 * 24 * 30 // 30 days
               },
               cacheableResponse: {
                 statuses: [0, 200]

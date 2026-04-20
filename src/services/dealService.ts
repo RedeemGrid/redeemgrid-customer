@@ -1,5 +1,14 @@
 import { supabase } from '@/lib/supabase';
 import type { EnrichedDeal, Branch } from '@/types/models';
+import { normalizeError } from '@/lib/errors';
+
+/**
+ * Session-scoped cache for the categories map.
+ * Categories are loaded once per session and reused across all service calls.
+ * When migrating to a C# API, this cache can remain as-is — just update
+ * the fetch call inside `getCategoriesMap()` to call the new endpoint.
+ */
+let _categoriesCache: Record<string, string> | null = null;
 
 export class DealService {
   /**
@@ -20,15 +29,15 @@ export class DealService {
       page_offset: pageOffset,
     });
 
-    if (rpcError) throw rpcError;
+    if (rpcError) throw normalizeError(rpcError);
 
     if (!rawDeals || rawDeals.length === 0) {
       return { deals: [], hasMore: false };
     }
 
     const hasMore = rawDeals.length === pageSize;
-    
-    // Fetch categories to map IDs to Names
+
+    // Use cached categories map (avoids redundant DB roundtrip)
     const categoriesMap = await this.getCategoriesMap();
 
     // Fetch deal details
@@ -42,7 +51,7 @@ export class DealService {
       console.error('Details fetch error:', detailsErr);
     }
 
-    const detailsMap = (detailsData || []).reduce((acc: any, d: any) => {
+    const detailsMap = (detailsData || []).reduce((acc: Record<string, any>, d: any) => {
       acc[d.id] = d;
       return acc;
     }, {});
@@ -70,15 +79,28 @@ export class DealService {
   }
 
   /**
-   * Fetches categories and returns a ID -> Name map.
+   * Returns a cached ID → Name map for categories.
+   * The cache lives for the duration of the browser session.
+   * Call `DealService.clearCache()` to invalidate (e.g., on logout).
    */
   static async getCategoriesMap(): Promise<Record<string, string>> {
-    // Note: In a real enterprise app, we might want to cache this in memory or localStorage.
+    if (_categoriesCache) return _categoriesCache;
+
     const { data: catsRes } = await supabase.from('categories').select('*');
-    return (catsRes || []).reduce((acc: any, c: any) => {
+    _categoriesCache = (catsRes || []).reduce((acc: Record<string, string>, c: any) => {
       acc[c.id] = c.name;
       return acc;
     }, {});
+
+    return _categoriesCache;
+  }
+
+  /**
+   * Clears the session-level categories cache.
+   * Should be called on user logout to avoid stale data.
+   */
+  static clearCache(): void {
+    _categoriesCache = null;
   }
 
   /**
@@ -86,7 +108,7 @@ export class DealService {
    */
   static async getTenantBranches(tenantId: string): Promise<Branch[]> {
     const { data, error } = await supabase.from('branches').select('*').eq('tenant_id', tenantId);
-    if (error) throw error;
+    if (error) throw normalizeError(error);
     return data as Branch[];
   }
 }

@@ -1,11 +1,12 @@
-// @ts-nocheck
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/context/AuthContext';
 import { Ticket, Clock, CheckCircle, ChevronLeft, ScanLine, QrCode } from 'lucide-react';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import OfferDetailModal from '@/components/OfferDetailModal';
 import SafeImage from '@/components/SafeImage';
+import { CouponCardSkeleton } from '@/components/Skeleton';
 import { CouponService } from '@/services/couponService';
 import { DealService } from '@/services/dealService';
 import type { Coupon, Branch } from '@/types/models';
@@ -14,102 +15,89 @@ export default function MyCoupons() {
   const { t } = useTranslation();
   const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const currentFilter = searchParams.get('filter') || 'active';
-  
-  const [coupons, setCoupons] = useState<Coupon[]>([]);
-  const [loading, setLoading] = useState(true);
+
   const [selectedCoupon, setSelectedCoupon] = useState<Coupon | null>(null);
   const [branches, setBranches] = useState<Branch[]>([]);
-  const [categories, setCategories] = useState<string[]>(['All']);
   const [activeCategory, setActiveCategory] = useState('All');
   const [showQrCode, setShowQrCode] = useState(false);
-  const navigate = useNavigate();
 
-  useEffect(() => {
-    if (user) {
-      fetchCoupons();
-    }
-  }, [user]);
-
-  const fetchCoupons = async () => {
-    if (!user) return;
-    setLoading(true);
-    try {
-      const enrichedCoupons = await CouponService.getUserCoupons(user.id);
-      setCoupons(enrichedCoupons);
-
-      const uniqueCats = ['All', ...new Set(enrichedCoupons.map(c => c.categoryName || 'Other'))];
-      setCategories(uniqueCats);
-
+  // ── React Query: User Coupons ────────────────────────────────────────────────
+  const { data: coupons = [], isLoading } = useQuery({
+    queryKey: ['user-coupons', user?.id],
+    queryFn: () => CouponService.getUserCoupons(user!.id),
+    enabled: !!user,
+    // After fetching, automatically open the coupon referenced by ?id= query param
+    select: (data) => {
       const targetId = searchParams.get('id');
       if (targetId) {
-        const targetCoupon = enrichedCoupons.find(c => c.id === targetId);
-        if (targetCoupon) {
-          setSelectedCoupon(targetCoupon);
-          searchParams.delete('id');
-          setSearchParams(searchParams, { replace: true });
+        const target = data.find(c => c.id === targetId);
+        if (target) {
+          // Defer the state update to after the render cycle
+          setTimeout(() => {
+            setSelectedCoupon(target);
+            // Clean up the URL without re-triggering a render
+            const newParams = new URLSearchParams(searchParams);
+            newParams.delete('id');
+            setSearchParams(newParams, { replace: true });
+          }, 0);
         }
       }
-    } catch (err) {
-      console.error('Error fetching coupons:', err);
-    } finally {
-      setLoading(false);
-    }
+      return data;
+    },
+  });
+
+  // Invalidate and refetch when filter changes
+  const handleFilterChange = (filter: string) => {
+    setSearchParams({ filter });
+    setActiveCategory('All');
+    queryClient.invalidateQueries({ queryKey: ['user-coupons', user?.id] });
   };
 
   const fetchBranchesForCoupon = async (tenantId: string) => {
     try {
       const b = await DealService.getTenantBranches(tenantId);
       setBranches(b);
-    } catch (e) {
+    } catch {
       setBranches([]);
     }
   };
 
-  useEffect(() => {
-    if (selectedCoupon?.tenants?.id) {
-      fetchBranchesForCoupon(selectedCoupon.tenants.id);
-    } else {
-      setBranches([]);
-    }
-  }, [selectedCoupon]);
+  const handleSelectCoupon = (coupon: Coupon) => {
+    setSelectedCoupon(coupon);
+    setShowQrCode(false);
+    if (coupon.tenants?.id) fetchBranchesForCoupon(coupon.tenants.id);
+    else setBranches([]);
+  };
 
   const now = new Date();
-  
+
+  const categories = ['All', ...new Set(coupons.map(c => c.categoryName || 'Other'))];
+
   const filteredCoupons = coupons.filter(c => {
     const isExpired = c.deals?.end_date && new Date(c.deals.end_date) < now;
-    
-    // Tab filtering
+
     let match = false;
     if (currentFilter === 'redeemed') match = c.status === 'redeemed';
-    else if (currentFilter === 'expired') match = c.status === 'pending' && isExpired;
+    else if (currentFilter === 'expired') match = c.status === 'pending' && !!isExpired;
     else match = c.status === 'pending' && !isExpired;
-    
-    if (!match) return false;
 
-    // Category filtering
+    if (!match) return false;
     if (activeCategory === 'All') return true;
     return c.categoryName === activeCategory;
   });
 
   const getTimeRemaining = (endDate?: string) => {
     if (!endDate) return null;
-    const total = Date.parse(endDate) - Date.parse(new Date().toISOString());
-    const hours = Math.floor((total / (1000 * 60 * 60)) % 24);
-    const days = Math.floor(total / (1000 * 60 * 60 * 24));
-
+    const total = Date.parse(endDate) - Date.now();
     if (total <= 0) return null;
+    const days = Math.floor(total / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((total / (1000 * 60 * 60)) % 24);
     if (days > 0) return `${days} ${t('coupons.daysLeft')}`;
     return `${hours} ${t('coupons.hoursLeft')}`;
   };
-
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center py-20 animate-pulse">
-        <div className="w-8 h-8 border-4 border-brand-primary border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-8 pb-24">
@@ -124,13 +112,10 @@ export default function MyCoupons() {
         {['active', 'redeemed', 'expired'].map((f) => (
           <button
             key={f}
-            onClick={() => {
-              setSearchParams({ filter: f });
-              setActiveCategory('All');
-            }}
-             className={`flex-1 py-3 rounded-[18px] text-[11px] font-black uppercase tracking-wider transition-all duration-300 ${
-              currentFilter === f 
-                ? 'bg-brand-primary text-white shadow-lg scale-105' 
+            onClick={() => handleFilterChange(f)}
+            className={`flex-1 py-3 rounded-[18px] text-[11px] font-black uppercase tracking-wider transition-all duration-300 ${
+              currentFilter === f
+                ? 'bg-brand-primary text-white shadow-lg scale-105'
                 : 'text-text-muted hover:text-text-main'
             }`}
           >
@@ -146,8 +131,8 @@ export default function MyCoupons() {
               key={cat}
               onClick={() => setActiveCategory(cat)}
               className={`px-5 py-2.5 rounded-full whitespace-nowrap text-[10px] font-black uppercase tracking-widest transition-all duration-300 border ${
-                activeCategory === cat 
-                ? 'bg-brand-primary text-white border-transparent shadow-lg' 
+                activeCategory === cat
+                ? 'bg-brand-primary text-white border-transparent shadow-lg'
                 : 'bg-white text-text-muted border-black/5 hover:border-black/10'
               }`}
             >
@@ -158,15 +143,15 @@ export default function MyCoupons() {
       )}
 
       <div className="grid gap-5">
-        {filteredCoupons.length === 0 ? (
+        {isLoading ? (
+          Array.from({ length: 3 }).map((_, i) => <CouponCardSkeleton key={i} />)
+        ) : filteredCoupons.length === 0 ? (
           <div className="bg-white border-2 border-dashed border-black/5 rounded-[40px] py-20 text-center px-8 shadow-sm">
             <Ticket size={56} className="text-neutral-200 mx-auto mb-6" />
             <h3 className="text-xl font-bold text-text-main mb-2">{t('coupons.noCouponsFound')}</h3>
-            <p className="text-text-muted text-sm mb-8 max-w-xs mx-auto">
-              {t('coupons.noCouponsFilter')}
-            </p>
-            <Link 
-              to="/" 
+            <p className="text-text-muted text-sm mb-8 max-w-xs mx-auto">{t('coupons.noCouponsFilter')}</p>
+            <Link
+              to="/"
               className="inline-block bg-brand-secondary text-white text-[11px] font-black uppercase tracking-widest px-10 py-5 rounded-full shadow-lg shadow-brand-secondary/20 hover:bg-brand-primary transition-all active:scale-95"
             >
               {t('coupons.exploreDeals')}
@@ -174,56 +159,53 @@ export default function MyCoupons() {
           </div>
         ) : (
           filteredCoupons.map((coupon) => (
-             <div 
+            <div
               key={coupon.id}
-              onClick={() => {
-                setSelectedCoupon(coupon);
-                setShowQrCode(false);
-              }}
+              onClick={() => handleSelectCoupon(coupon)}
               className={`bg-white rounded-[32px] shadow-premium border border-black/[0.03] overflow-hidden hover:shadow-card-hover hover:border-brand-primary/10 active:scale-[0.97] transition-all duration-300 cursor-pointer group flex flex-col h-full ${
                 currentFilter !== 'active' ? 'grayscale opacity-70' : ''
               }`}
             >
               <div className="relative h-40 w-full overflow-hidden bg-neutral-100">
-                <SafeImage 
-                  src={coupon.deals?.image_url} 
-                  alt={coupon.deals?.title || ''} 
-                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
+                <SafeImage
+                  src={coupon.deals?.image_url}
+                  alt={coupon.deals?.title || ''}
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                   placeholder={
                     <div className="w-full h-full flex items-center justify-center text-neutral-200">
-                       <Ticket size={40} strokeWidth={1} className="animate-pulse" />
+                      <Ticket size={40} strokeWidth={1} className="animate-pulse" />
                     </div>
                   }
                 />
-                
+
                 <div className="absolute top-4 right-4 z-10 flex flex-col gap-2 items-end">
-                   <div className={`text-[9px] px-3 py-1.5 rounded-full font-black uppercase tracking-tighter shadow-lg ${
-                      currentFilter === 'active' 
-                        ? 'bg-brand-primary text-white shadow-brand-primary/20' 
-                        : 'bg-neutral-800 text-white shadow-black/20'
-                    }`}>
-                       {t(`coupons.tab${currentFilter.charAt(0).toUpperCase() + currentFilter.slice(1)}`)}
-                   </div>
-                   
-                   {currentFilter === 'active' && getTimeRemaining(coupon.deals?.end_date) && (
-                      <div className="glass-light px-3 py-1.5 rounded-full shadow-lg border border-white/20 flex items-center gap-1.5 animate-pulse">
-                        <Clock size={12} className="text-orange-500" />
-                        <span className="text-[9px] font-black text-orange-600 uppercase tracking-tighter">
-                          {getTimeRemaining(coupon.deals?.end_date)}
-                        </span>
-                      </div>
-                   )}
+                  <div className={`text-[9px] px-3 py-1.5 rounded-full font-black uppercase tracking-tighter shadow-lg ${
+                    currentFilter === 'active'
+                      ? 'bg-brand-primary text-white shadow-brand-primary/20'
+                      : 'bg-neutral-800 text-white shadow-black/20'
+                  }`}>
+                    {t(`coupons.tab${currentFilter.charAt(0).toUpperCase() + currentFilter.slice(1)}`)}
+                  </div>
+
+                  {currentFilter === 'active' && getTimeRemaining(coupon.deals?.end_date) && (
+                    <div className="glass-light px-3 py-1.5 rounded-full shadow-lg border border-white/20 flex items-center gap-1.5 animate-pulse">
+                      <Clock size={12} className="text-status-warning" />
+                      <span className="text-[9px] font-black text-status-warning uppercase tracking-tighter">
+                        {getTimeRemaining(coupon.deals?.end_date)}
+                      </span>
+                    </div>
+                  )}
                 </div>
 
                 <div className="absolute bottom-4 left-4 z-10">
-                   <div className="bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-xl shadow-sm border border-white/20">
-                      <p className="text-[8px] text-text-muted font-black uppercase tracking-widest mb-0.5">
-                        {currentFilter === 'expired' ? t('coupons.expiredLabel') : t('coupons.claimedLabel')}
-                      </p>
-                      <p className="text-[10px] font-black text-text-main">
-                        {new Date(currentFilter === 'expired' && coupon.deals?.end_date ? coupon.deals.end_date : coupon.created_at).toLocaleDateString()}
-                      </p>
-                   </div>
+                  <div className="bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-xl shadow-sm border border-white/20">
+                    <p className="text-[8px] text-text-muted font-black uppercase tracking-widest mb-0.5">
+                      {currentFilter === 'expired' ? t('coupons.expiredLabel') : t('coupons.claimedLabel')}
+                    </p>
+                    <p className="text-[10px] font-black text-text-main">
+                      {new Date(currentFilter === 'expired' && coupon.deals?.end_date ? coupon.deals.end_date : coupon.created_at).toLocaleDateString()}
+                    </p>
+                  </div>
                 </div>
               </div>
 
@@ -231,22 +213,22 @@ export default function MyCoupons() {
                 <div className="flex justify-between items-start mb-4">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center p-1 border border-black/5 overflow-hidden flex-shrink-0">
-                       {coupon.tenants?.logo_url ? (
-                         <img src={coupon.tenants?.logo_url} alt="Logo" className="w-full h-full object-contain" />
-                       ) : (
+                      {coupon.tenants?.logo_url ? (
+                        <img src={coupon.tenants?.logo_url} alt="Logo" className="w-full h-full object-contain" />
+                      ) : (
                         <div className="w-full h-full bg-brand-primary/5 flex items-center justify-center text-brand-primary font-bold text-xs">
-                           {coupon.tenants?.name?.[0] || 'N'}
-                         </div>
-                       )}
+                          {coupon.tenants?.name?.[0] || 'N'}
+                        </div>
+                      )}
                     </div>
                     <div>
-                        <p className="text-[10px] text-text-muted font-black uppercase tracking-[0.15em] mb-0.5">{coupon.tenants?.name}</p>
-                        {currentFilter === 'redeemed' && (
-                          <div className="flex items-center gap-1 text-brand-secondary">
-                            <CheckCircle size={10} />
-                            <span className="text-[9px] font-black uppercase tracking-tighter">Canjeado</span>
-                          </div>
-                        )}
+                      <p className="text-[10px] text-text-muted font-black uppercase tracking-[0.15em] mb-0.5">{coupon.tenants?.name}</p>
+                      {currentFilter === 'redeemed' && (
+                        <div className="flex items-center gap-1 text-status-success">
+                          <CheckCircle size={10} />
+                          <span className="text-[9px] font-black uppercase tracking-tighter">Canjeado</span>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -276,23 +258,23 @@ export default function MyCoupons() {
           showQrCode={showQrCode}
           branches={(branches && branches.length > 0) ? branches : [] as any}
           actionButtons={
-            currentFilter === 'active' 
+            currentFilter === 'active'
             ? [
                 {
                   id: 'show-qr-btn',
                   text: showQrCode ? t('coupons.hideMyQR') : t('coupons.showMyQR'),
                   icon: QrCode,
                   onClick: () => setShowQrCode(!showQrCode),
-                  primary: false
+                  primary: false,
                 },
                 {
                   id: 'scan-qr-btn',
                   text: t('coupons.scanStoreQR'),
                   icon: ScanLine,
                   onClick: () => navigate(`/scanner?deal_id=${selectedCoupon.deal_id}`),
-                  primary: true
-                }
-              ] 
+                  primary: true,
+                },
+              ]
             : []
           }
         />
@@ -300,4 +282,3 @@ export default function MyCoupons() {
     </div>
   );
 }
-

@@ -1,43 +1,72 @@
-// @ts-nocheck
-import { useEffect, useState } from 'react';
-import { X, MapPin, Navigation, Clock, Loader2, QrCode, ChevronDown, Tag } from 'lucide-react';
+import { useState } from 'react';
+import { X, MapPin, Navigation, Loader2, ChevronDown, Tag } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { QRCodeSVG } from 'qrcode.react';
-import { useNavigate } from 'react-router-dom';
 import SafeImage from './SafeImage';
+import type { LucideIcon } from 'lucide-react';
+
+interface ActionButton {
+  id: string;
+  text: string;
+  icon?: LucideIcon;
+  onClick: () => void;
+  disabled?: boolean;
+  loading?: boolean;
+  primary?: boolean;
+}
+
+interface BranchLike {
+  id?: string;
+  branch_id?: string;
+  name?: string;
+  branch_name?: string;
+  distance?: number;
+  location?: unknown;
+}
+
+interface OfferDetailModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  isCoupon?: boolean;
+  tenantName?: string;
+  tenantLogo?: string;
+  title?: string;
+  description?: string;
+  imageUrl?: string;
+  category?: string;
+  endDate?: string;
+  claimedDate?: string;
+  qrCode?: string;
+  showQrCode?: boolean;
+  branches?: BranchLike[];
+  actionButtons?: ActionButton[];
+}
 
 export default function OfferDetailModal({
   isOpen,
   onClose,
-  
-  // View mode
-  isCoupon = false, // If true, shows claimed date and qr code/scanner actions differently
-  
-  // Data
+  isCoupon = false,
   tenantName,
   tenantLogo,
   title,
   description,
-  imageUrl, // if null, handled gracefully
+  imageUrl,
   category,
   endDate,
   claimedDate,
   qrCode,
   showQrCode = false,
   branches = [],
-  
-  // Actions
-  actionButtons = [] // array of { id, text, icon: Icon, onClick, disabled, loading, primary }
-}) {
+  actionButtons = [],
+}: OfferDetailModalProps) {
   const { t } = useTranslation();
-  const navigate = useNavigate();
   const [isBranchesOpen, setIsBranchesOpen] = useState(false);
 
   if (!isOpen) return null;
 
-  const getTimeRemaining = (dateStr) => {
+  const getTimeRemaining = (dateStr?: string) => {
     if (!dateStr) return null;
-    const total = Date.parse(dateStr) - Date.parse(new Date());
+    const total = Date.parse(dateStr) - Date.now();
     const hours = Math.floor((total / (1000 * 60 * 60)) % 24);
     const days = Math.floor(total / (1000 * 60 * 60 * 24));
 
@@ -56,9 +85,9 @@ export default function OfferDetailModal({
     ? description.substring(0, DESC_LIMIT) + '...' 
     : description;
 
-  const openInMaps = (branch) => {
+  const openInMaps = (branch: BranchLike) => {
     if (!branch.location) return;
-    let query = branch.location;
+    let query: string = typeof branch.location === 'string' ? branch.location : '';
 
     // Decode PostGIS EWKB (Extended WKB) hex string to lat,lng
     if (typeof query === 'string' && query.startsWith('0101000020E6100000') && query.length === 50) {
@@ -66,13 +95,13 @@ export default function OfferDetailModal({
         const hexX = query.substring(18, 34);
         const hexY = query.substring(34, 50);
         
-        const getFloat64 = (hex) => {
+        const getFloat64 = (hex: string): number => {
           const buffer = new ArrayBuffer(8);
           const view = new DataView(buffer);
-          for(let i=0; i<8; i++) {
-              view.setUint8(i, parseInt(hex.substring(i*2, i*2+2), 16));
+          for (let i = 0; i < 8; i++) {
+            view.setUint8(i, parseInt(hex.substring(i * 2, i * 2 + 2), 16));
           }
-          return view.getFloat64(0, true); // true for little endian
+          return view.getFloat64(0, true);
         };
         
         const lng = getFloat64(hexX);
@@ -82,6 +111,7 @@ export default function OfferDetailModal({
         console.error('Failed to parse location hex', e);
       }
     }
+
 
     const url = `https://www.google.com/maps/search/?api=1&query=${query}`;
     window.open(url, '_blank');
@@ -139,7 +169,7 @@ export default function OfferDetailModal({
                   <>
                     <div className="w-2.5 h-2.5 bg-brand-secondary rounded-full"></div>
                     <span className="text-sm font-black text-text-main uppercase tracking-wider">
-                      {title.match(/\d+%/)[0]}
+                      {title?.match(/\d+%/)?.[0]}
                     </span>
                   </>
                 ) : (

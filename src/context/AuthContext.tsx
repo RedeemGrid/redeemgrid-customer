@@ -3,6 +3,8 @@ import type { ReactNode } from 'react';
 import { supabase } from '@/lib/supabase';
 import type { Profile } from '@/types/models';
 import type { User } from '@supabase/supabase-js';
+import { DealService } from '@/services/dealService';
+import { queryClient } from '@/context/QueryProvider';
 
 interface AuthContextType {
   user: User | null;
@@ -82,6 +84,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   };
 
   const logout = async () => {
+    // Clear session-level caches so a subsequent login starts fresh
+    DealService.clearCache();
+    queryClient.clear();
     return supabase.auth.signOut();
   };
 
