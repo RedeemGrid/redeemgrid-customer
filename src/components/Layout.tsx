@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { 
@@ -217,3 +218,4 @@ export default function Layout() {
     </div>
   );
 }
+

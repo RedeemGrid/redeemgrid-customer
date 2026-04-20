@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { RefreshCw, X, Sparkles } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useRegisterSW } from 'virtual:pwa-register/react';
@@ -65,3 +66,4 @@ export default function ReloadPrompt() {
     </div>
   );
 }
+

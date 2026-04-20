@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   ChevronLeft, HelpCircle, MessageCircle, Mail, 
-  ChevronDown, ExternalLink, ShieldCheck, Ticket, 
+  ChevronDown, ShieldCheck, Ticket, 
   MapPin, AlertCircle 
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -11,7 +11,7 @@ import { APP_CONFIG } from '../config';
 export default function Support() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const [openFaq, setOpenFaq] = useState(null);
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
 
   const faqs = [
     {

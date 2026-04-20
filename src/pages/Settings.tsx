@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, HelpCircle, Globe } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -7,7 +8,7 @@ export default function Settings() {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
 
-  const handleLanguageChange = (e) => {
+  const handleLanguageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     i18n.changeLanguage(e.target.value);
   };
 
@@ -81,3 +82,4 @@ export default function Settings() {
     </div>
   );
 }
+

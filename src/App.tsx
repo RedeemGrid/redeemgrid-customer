@@ -1,29 +1,38 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider, useAuth } from './context/AuthContext';
-import Login from './pages/Login';
-import Home from './pages/Home';
-import MyCoupons from './pages/MyCoupons';
-import Profile from './pages/Profile';
-import Notifications from './pages/Notifications';
-import Settings from './pages/Settings';
-import About from './pages/About';
-import Terms from './pages/Terms';
-import Support from './pages/Support';
-import Scanner from './pages/Scanner';
-import Layout from './components/Layout';
+import { AuthProvider, useAuth } from '@/context/AuthContext';
+import Login from '@/pages/Login';
+import Home from '@/pages/Home';
+import MyCoupons from '@/pages/MyCoupons';
+import Profile from '@/pages/Profile';
+import Notifications from '@/pages/Notifications';
+import Settings from '@/pages/Settings';
+import About from '@/pages/About';
+import Terms from '@/pages/Terms';
+import Support from '@/pages/Support';
+import Scanner from '@/pages/Scanner';
+import Layout from '@/components/Layout';
+import type { ReactNode } from 'react';
 
-const ProtectedRoute = ({ children }) => {
+interface ProtectedRouteProps {
+  children: ReactNode;
+}
+
+const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const { user, loading } = useAuth();
   
   if (loading) {
-    return <div className="min-h-screen flex items-center justify-center bg-bg-end"><p className="text-white/40 font-bold uppercase tracking-widest text-[10px]">Loading Experience...</p></div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-bg-page">
+        <p className="text-text-muted font-bold uppercase tracking-widest text-[10px]">Loading Experience...</p>
+      </div>
+    );
   }
   
   if (!user) {
     return <Navigate to="/login" replace />;
   }
   
-  return children;
+  return <>{children}</>;
 };
 
 function App() {

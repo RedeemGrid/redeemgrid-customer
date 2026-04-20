@@ -7,7 +7,18 @@ import offerPlaceholder from '../assets/offer_placeholder.png';
  * Handles image loading states, errors, and missing sources gracefully
  * with a branded Nabbu placeholder.
  */
-const SafeImage = ({ src, alt, className, placeholder, text = "Nabbu Deal", iconSize = 40 }) => {
+import type { ReactNode } from 'react';
+
+interface SafeImageProps {
+  src?: string | null;
+  alt?: string;
+  className?: string;
+  placeholder?: ReactNode;
+  text?: string;
+  iconSize?: number;
+}
+
+const SafeImage = ({ src, alt, className, placeholder, text = "Nabbu Deal", iconSize = 40 }: SafeImageProps) => {
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState(false);
 
@@ -49,3 +60,4 @@ const SafeImage = ({ src, alt, className, placeholder, text = "Nabbu Deal", icon
 };
 
 export default SafeImage;
+

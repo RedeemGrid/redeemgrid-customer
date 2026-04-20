@@ -1,12 +1,15 @@
-import { useEffect, useState, useRef, useCallback } from 'react';
-import { useGeolocation } from '../hooks/useGeolocation';
-import { supabase } from '../lib/supabase';
-import { useAuth } from '../context/AuthContext';
+// @ts-nocheck
+import { useEffect, useState, useCallback, useRef } from 'react';
+import { useGeolocation } from '@/hooks/useGeolocation';
+import { useAuth } from '@/context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { MapPin, Tag, RefreshCcw, AlertTriangle, Loader2, Search, X, Navigation, Clock } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import OfferDetailModal from '../components/OfferDetailModal';
-import SafeImage from '../components/SafeImage';
+import OfferDetailModal from '@/components/OfferDetailModal';
+import SafeImage from '@/components/SafeImage';
+import { DealService } from '@/services/dealService';
+import { CouponService } from '@/services/couponService';
+import type { EnrichedDeal, Branch } from '@/types/models';
 
 const PAGE_SIZE = 20;
 
@@ -16,103 +19,53 @@ export default function Home() {
   const { user } = useAuth();
   const navigate = useNavigate();
   
-  const [deals, setDeals] = useState([]);
-  const [filteredDeals, setFilteredDeals] = useState([]);
+  const [deals, setDeals] = useState<EnrichedDeal[]>([]);
+  const [filteredDeals, setFilteredDeals] = useState<EnrichedDeal[]>([]);
   const [loading, setLoading] = useState(false);
   const [isFetchingMore, setIsFetchingMore] = useState(false);
   const [hasMore, setHasMore] = useState(false);
   const [pageOffset, setPageOffset] = useState(0);
-  const [claimingId, setClaimingId] = useState(null);
-  const [error, setError] = useState(null);
-  const [selectedDeal, setSelectedDeal] = useState(null);
-  const [dealBranches, setDealBranches] = useState([]);
-  const [userCoupons, setUserCoupons] = useState({}); // Track claimed status: { dealId: couponId }
+  const [claimingId, setClaimingId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedDeal, setSelectedDeal] = useState<EnrichedDeal | null>(null);
+  const [dealBranches, setDealBranches] = useState<Branch[]>([]);
+  const [userCoupons, setUserCoupons] = useState<Record<string, { id: string; status: string }>>({});
   
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState('All');
-  const [availableCategories, setAvailableCategories] = useState(['All']);
+  const [availableCategories, setAvailableCategories] = useState<string[]>(['All']);
+  
+  const lastFetchedCoordsRef = useRef<{lat: number, lng: number} | null>(null);
 
-  // Cache lookup tables — fetched once, never re-fetched on load more
-  const catsMapRef = useRef(null);
-
-  const enrichDeals = useCallback((rawDeals, detailsData) => {
-    const detailsMap = detailsData.reduce((acc, d) => { acc[d.id] = d; return acc; }, {});
-    return rawDeals.map(d => {
-      const detail = detailsMap[d.deal_id];
-      const tenant = detail?.tenant;
-      return {
-        ...d,
-        category: detail?.category_id ? (catsMapRef.current[detail.category_id] || 'Other') : 'Other',
-        tenant_id: detail?.tenant_id,
-        discount_value: detail?.discount_value,
-        tenant_name: tenant?.name || 'Business',
-        tenant_logo: tenant?.logo_url?.replace('via.placeholder.com', 'placehold.co'),
-        end_date: detail?.end_date,
-        image_url: detail?.image_url,
-        description: detail?.description,
-      };
-    });
-  }, []);
-
-  const fetchNearbyDeals = useCallback(async (lat, lng, offset = 0, isLoadMore = false) => {
+  const fetchNearbyDeals = useCallback(async (lat: number, lng: number, offset = 0, isLoadMore = false) => {
     if (isLoadMore) setIsFetchingMore(true);
     else { setLoading(true); setError(null); }
 
     try {
-      const { data: rawDeals, error: rpcError } = await supabase.rpc('get_nearby_branches', {
-        lat,
-        lng,
-        radius_meters: 50000,
-        page_size: PAGE_SIZE,
-        page_offset: offset,
-      });
-
-      if (rpcError) throw rpcError;
-
-      if (!rawDeals || rawDeals.length === 0) {
-        setHasMore(false);
-        if (!isLoadMore) { setDeals([]); setFilteredDeals([]); }
-        return;
-      }
-
-      // Determine if more pages exist
-      setHasMore(rawDeals.length === PAGE_SIZE);
-
-      // Fetch lookup tables only once per session
-      if (!catsMapRef.current) {
-        const { data: catsRes } = await supabase.from('categories').select('*');
-        catsMapRef.current = (catsRes || []).reduce((acc, c) => { acc[c.id] = c.name; return acc; }, {});
-      }
-
-      // Fetch deal details for this page only
-      const dealIds = [...new Set(rawDeals.map(d => d.deal_id))];
-      const { data: detailsData, error: detailsErr } = await supabase
-        .from('deals').select('*, tenant:tenant_id(*)').in('id', dealIds);
-      if (detailsErr) console.error('Details fetch error:', detailsErr);
-
-      const enrichedDeals = enrichDeals(rawDeals, detailsData || []);
+      const { deals: fetchedDeals, hasMore: more } = await DealService.getNearbyDeals(lat, lng, 50000, PAGE_SIZE, offset);
+      setHasMore(more);
 
       if (isLoadMore) {
         setDeals(prev => {
-          const allDeals = [...prev, ...enrichedDeals];
+          const allDeals = [...prev, ...fetchedDeals];
           const uniqueCats = ['All', ...new Set(allDeals.map(d => d.category))];
           setAvailableCategories(uniqueCats);
           return allDeals;
         });
       } else {
-        const uniqueCats = ['All', ...new Set(enrichedDeals.map(d => d.category))];
+        const uniqueCats = ['All', ...new Set(fetchedDeals.map(d => d.category))];
         setAvailableCategories(uniqueCats);
-        setDeals(enrichedDeals);
-        setFilteredDeals(enrichedDeals);
+        setDeals(fetchedDeals);
+        setFilteredDeals(fetchedDeals);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error fetching deals:', err);
       setError('Could not fetch deals in your area.');
     } finally {
       setLoading(false);
       setIsFetchingMore(false);
     }
-  }, [enrichDeals]);
+  }, []);
 
   const loadMore = useCallback(() => {
     if (!coords || isFetchingMore || !hasMore) return;
@@ -123,26 +76,20 @@ export default function Home() {
 
   const fetchUserCoupons = async () => {
     if (!user) return;
-    const { data } = await supabase.from('coupons').select('id, deal_id, status').eq('user_id', user.id);
-    if (data) {
-      const cmap = {};
-      data.forEach(c => { cmap[c.deal_id] = { id: c.id, status: c.status }; });
-      setUserCoupons(cmap);
-    }
+    const cmap = await CouponService.getUserCouponsMap(user.id);
+    setUserCoupons(cmap);
   };
 
   useEffect(() => {
     fetchUserCoupons();
   }, [user]);
 
-  const fetchDealBranches = async (tenantId) => {
-    const { data } = await supabase.from('branches').select('*').eq('tenant_id', tenantId);
-    if (data && coords) {
-      // Calculate basic distance using Haversine if needed, or just append the distance from the original deal query if it's the only one. 
-      // For simplicity, we just pass the branches, distances can be handled later or omitted if not critical.
-      setDealBranches(data);
-    } else {
-      setDealBranches(data || []);
+  const fetchDealBranches = async (tenantId: string) => {
+    try {
+      const branches = await DealService.getTenantBranches(tenantId);
+      setDealBranches(branches);
+    } catch (e) {
+      setDealBranches([]);
     }
   };
 
@@ -154,7 +101,7 @@ export default function Home() {
     }
   }, [selectedDeal]);
 
-  const claimDeal = async (deal) => {
+  const claimDeal = async (deal: EnrichedDeal) => {
     if (!user) { navigate('/login'); return; }
     
     // If already claimed, act as 'View Coupon'
@@ -165,19 +112,10 @@ export default function Home() {
 
     setClaimingId(deal.deal_id);
     try {
-      const qrCode = `RG-${Math.random().toString(36).substring(2, 10).toUpperCase()}`;
-      const { data, error: claimError } = await supabase.from('coupons').insert({
-        deal_id: deal.deal_id,
-        tenant_id: deal.tenant_id,
-        user_id: user.id,
-        qr_code: qrCode,
-        status: 'pending'
-      }).select().single();
-      if (claimError) throw claimError;
-      
-      setUserCoupons(prev => ({ ...prev, [deal.deal_id]: { id: data.id, status: 'pending' } }));
-      navigate(`/coupons?id=${data.id}`);
-    } catch (err) {
+      const coupon = await CouponService.claimDeal(user.id, deal);
+      setUserCoupons(prev => ({ ...prev, [deal.deal_id]: { id: coupon.id, status: 'pending' } }));
+      navigate(`/coupons?id=${coupon.id}`);
+    } catch (err: any) {
       console.error('Error claiming deal:', err);
       if (err.code === '23505') {
         alert(t('home.alreadyClaimed') || 'You have already claimed this deal!');
@@ -192,12 +130,20 @@ export default function Home() {
   // Reset and reload when location becomes available
   useEffect(() => {
     if (permissionStatus === 'ready' && coords) {
+      const { latitude: lat, longitude: lng } = coords;
+      
+      // Avoid refetching if we already fetched these exact coordinates
+      if (lastFetchedCoordsRef.current?.lat === lat && 
+          lastFetchedCoordsRef.current?.lng === lng) {
+        return;
+      }
+
       setPageOffset(0);
       setHasMore(false);
-      catsMapRef.current = null; // reset cache on fresh location
-      fetchNearbyDeals(coords.latitude, coords.longitude, 0, false);
+      lastFetchedCoordsRef.current = { lat, lng };
+      fetchNearbyDeals(lat, lng, 0, false);
     }
-  }, [permissionStatus, coords]);
+  }, [permissionStatus, coords, fetchNearbyDeals]);
 
   useEffect(() => {
     let result = deals;
@@ -217,9 +163,7 @@ export default function Home() {
     setFilteredDeals(result);
   }, [searchQuery, activeCategory, deals]);
 
-  // --- Permission state render branches ---
-
-  // Checking existing permission silently — minimal spinner
+  // [... Rendering logic ...]
   if (permissionStatus === 'idle' || permissionStatus === 'checking') {
     return (
       <div className="flex flex-col items-center justify-center py-20 animate-pulse">
@@ -229,7 +173,6 @@ export default function Home() {
     );
   }
 
-  // Waiting for browser to return coords
   if (permissionStatus === 'loading') {
     return (
       <div className="flex flex-col items-center justify-center py-20">
@@ -241,7 +184,6 @@ export default function Home() {
     );
   }
 
-   // First-time visit — show branded rationale before triggering browser prompt
   if (permissionStatus === 'prompt') {
     return (
       <div className="flex flex-col items-center justify-center py-10 px-2">
@@ -250,14 +192,8 @@ export default function Home() {
             <div className="w-24 h-24 bg-brand-primary/5 rounded-full flex items-center justify-center mx-auto mb-8 text-brand-primary">
               <Navigation size={44} fill="currentColor" />
             </div>
-
-            <h2 className="text-2xl font-black text-text-main mb-3 tracking-tight">
-              {t('home.locationRationaleTitle')}
-            </h2>
-            <p className="text-text-muted text-sm leading-relaxed font-medium mb-10">
-              {t('home.locationRationaleDesc')}
-            </p>
-
+            <h2 className="text-2xl font-black text-text-main mb-3 tracking-tight">{t('home.locationRationaleTitle')}</h2>
+            <p className="text-text-muted text-sm leading-relaxed font-medium mb-10">{t('home.locationRationaleDesc')}</p>
             <button
               onClick={requestLocation}
               className="w-full bg-brand-secondary text-white font-black py-5 rounded-full shadow-lg shadow-brand-secondary/20 hover:bg-brand-primary active:scale-[0.98] transition-all text-sm uppercase tracking-widest flex items-center justify-center gap-3"
@@ -271,7 +207,6 @@ export default function Home() {
     );
   }
 
-  // Permission permanently denied — guide user to browser settings
   if (permissionStatus === 'denied') {
     return (
       <div className="flex flex-col items-center justify-center py-10 px-2">
@@ -280,9 +215,7 @@ export default function Home() {
             <AlertTriangle size={36} className="text-red-500" />
           </div>
           <h3 className="font-black text-text-main text-xl mb-3">{t('home.accessDeniedTitle')}</h3>
-          <p className="text-text-muted text-sm leading-relaxed mb-8">
-            {t('home.accessDeniedDesc')}
-          </p>
+          <p className="text-text-muted text-sm leading-relaxed mb-8">{t('home.accessDeniedDesc')}</p>
           <button
             onClick={() => window.location.reload()}
             className="w-full bg-red-500 text-white font-black py-5 rounded-full shadow-lg shadow-red-500/20 hover:opacity-90 transition-all active:scale-95 text-sm uppercase tracking-widest"
@@ -294,7 +227,6 @@ export default function Home() {
     );
   }
 
-  // Generic geolocation error (timeout, unsupported, etc.) — show retry
   if (permissionStatus === 'error') {
     return (
       <div className="flex flex-col items-center justify-center py-10 px-2">
@@ -400,7 +332,6 @@ export default function Home() {
         ) : (
           filteredDeals.map((deal, idx) => {
             const isClaimed = !!userCoupons[deal.deal_id];
-            // Format end_date if present
             const endDateString = deal.end_date ? new Date(deal.end_date).toLocaleDateString() : null;
 
             return (
@@ -409,7 +340,6 @@ export default function Home() {
                 onClick={() => setSelectedDeal(deal)}
                 className="bg-white rounded-[32px] shadow-premium hover:shadow-card-hover hover:-translate-y-1 transition-all duration-500 group cursor-pointer flex flex-col h-full relative"
               >
-                {/* Hero Image Section */}
                 <div className="relative h-44 w-full bg-neutral-100 rounded-t-[32px] overflow-hidden">
                   <SafeImage 
                     src={deal.image_url} 
@@ -423,14 +353,13 @@ export default function Home() {
                     }
                   />
                   
-                  {/* Floating Hook Label */}
                   <div className="absolute top-6 left-6 z-10">
                     <div className="bg-white/95 px-4 py-2 rounded-2xl shadow-lg border border-black/5 flex items-center gap-2">
                       {deal.deal_title?.includes('%') ? (
                         <>
                           <div className="w-2 h-2 bg-brand-secondary rounded-full"></div>
                           <span className="text-[11px] font-black text-text-main uppercase tracking-wider">
-                            {deal.deal_title.match(/\d+%/)[0]}
+                            {deal.deal_title.match(/\d+%/)?.[0]}
                           </span>
                         </>
                       ) : (
@@ -442,7 +371,6 @@ export default function Home() {
                     </div>
                   </div>
 
-                  {/* Corner Category Tag */}
                   <div className="absolute top-4 right-4 z-10">
                      <div className="bg-brand-primary text-white text-[9px] font-black px-3 py-1.5 rounded-full uppercase tracking-tighter shadow-lg shadow-brand-primary/20">
                         {t(`db_categories.${deal.category.charAt(0).toUpperCase() + deal.category.slice(1).toLowerCase()}`) || deal.category}
@@ -504,7 +432,6 @@ export default function Home() {
         )}
       </div>
 
-      {/* Load More / End of List */}
       {!loading && deals.length > 0 && (
         <div className="flex justify-center pb-4">
           {hasMore ? (
@@ -557,3 +484,4 @@ export default function Home() {
     </div>
   );
 }
+

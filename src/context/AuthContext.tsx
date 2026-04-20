@@ -1,12 +1,27 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-import { supabase } from '../lib/supabase';
+import type { ReactNode } from 'react';
+import { supabase } from '@/lib/supabase';
+import type { Profile } from '@/types/models';
+import type { User } from '@supabase/supabase-js';
 
-const AuthContext = createContext({});
+interface AuthContextType {
+  user: User | null;
+  profile: Profile | null;
+  loading: boolean;
+  loginWithGoogle: () => Promise<any>;
+  logout: () => Promise<any>;
+}
 
-export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [profile, setProfile] = useState(null);
-  const [loading, setLoading] = useState(true);
+const AuthContext = createContext<AuthContextType>({} as AuthContextType);
+
+interface AuthProviderProps {
+  children: ReactNode;
+}
+
+export const AuthProvider = ({ children }: AuthProviderProps) => {
+  const [user, setUser] = useState<User | null>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     // Get initial session
@@ -33,7 +48,7 @@ export const AuthProvider = ({ children }) => {
     return () => subscription.unsubscribe();
   }, []);
 
-  const fetchProfile = async (userId) => {
+  const fetchProfile = async (userId: string) => {
     try {
       const { data, error } = await supabase
         .from('profiles')
@@ -42,11 +57,10 @@ export const AuthProvider = ({ children }) => {
         .maybeSingle();
         
       if (!error && data) {
-        setProfile(data);
+        setProfile(data as Profile);
       } else if (error) {
          console.error('Error fetching profile:', error.message, error.details, error.hint, error.code);
-         // If 406, it might mean the table or the RLS is misconfigured
-         if (error.code === '406' || error.status === 406) {
+         if (error.code === '406' || (error as any).status === 406) {
            console.warn('HINT: Check if the "profiles" table exists and RLS allows select.');
          }
       }
@@ -58,9 +72,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const loginWithGoogle = async () => {
-    // Determine redirect URL: Use current location origin + Vite base path
     const redirectTo = window.location.origin + import.meta.env.BASE_URL;
-    
     return supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
@@ -73,7 +85,7 @@ export const AuthProvider = ({ children }) => {
     return supabase.auth.signOut();
   };
 
-  const value = {
+  const value: AuthContextType = {
     user,
     profile,
     loading,
@@ -91,3 +103,4 @@ export const AuthProvider = ({ children }) => {
 export const useAuth = () => {
   return useContext(AuthContext);
 };
+

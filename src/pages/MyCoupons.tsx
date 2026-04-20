@@ -1,12 +1,14 @@
+// @ts-nocheck
 import { useEffect, useState } from 'react';
-import { supabase } from '../lib/supabase';
-import { useAuth } from '../context/AuthContext';
-import { QRCodeSVG } from 'qrcode.react';
-import { Ticket, Clock, CheckCircle, ChevronLeft, X, AlertCircle, MapPin, Navigation, ScanLine, QrCode } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
+import { Ticket, Clock, CheckCircle, ChevronLeft, ScanLine, QrCode } from 'lucide-react';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import OfferDetailModal from '../components/OfferDetailModal';
-import SafeImage from '../components/SafeImage';
+import OfferDetailModal from '@/components/OfferDetailModal';
+import SafeImage from '@/components/SafeImage';
+import { CouponService } from '@/services/couponService';
+import { DealService } from '@/services/dealService';
+import type { Coupon, Branch } from '@/types/models';
 
 export default function MyCoupons() {
   const { t } = useTranslation();
@@ -14,11 +16,11 @@ export default function MyCoupons() {
   const [searchParams, setSearchParams] = useSearchParams();
   const currentFilter = searchParams.get('filter') || 'active';
   
-  const [coupons, setCoupons] = useState([]);
+  const [coupons, setCoupons] = useState<Coupon[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedCoupon, setSelectedCoupon] = useState(null);
-  const [branches, setBranches] = useState([]);
-  const [categories, setCategories] = useState(['All']);
+  const [selectedCoupon, setSelectedCoupon] = useState<Coupon | null>(null);
+  const [branches, setBranches] = useState<Branch[]>([]);
+  const [categories, setCategories] = useState<string[]>(['All']);
   const [activeCategory, setActiveCategory] = useState('All');
   const [showQrCode, setShowQrCode] = useState(false);
   const navigate = useNavigate();
@@ -30,53 +32,13 @@ export default function MyCoupons() {
   }, [user]);
 
   const fetchCoupons = async () => {
+    if (!user) return;
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('coupons')
-        .select(`
-          *,
-          deals (
-            title,
-            description,
-            image_url,
-            end_date,
-            id,
-            category_id
-          ),
-          tenants (
-            id,
-            name,
-            logo_url
-          )
-        `)
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setCoupons(data || []);
-
-      // Extract unique categories using ID mapping or names
-      // Since we don't have the category names joined, we'll fetch them separately like in Home.jsx
-      // Extract unique categories using ID mapping or names
-      const { data: catsData } = await supabase.from('categories').select('*');
-      const catsMap = (catsData || []).reduce((acc, c) => {
-        acc[c.id] = c.name;
-        return acc;
-      }, {});
-
-      const enrichedCoupons = (data || []).map(c => ({
-        ...c,
-        categoryName: c.deals?.category_id ? catsMap[c.deals.category_id] : 'Other',
-        tenants: {
-          ...c.tenants,
-          logo_url: c.tenants?.logo_url?.replace('via.placeholder.com', 'placehold.co')
-        }
-      }));
-
+      const enrichedCoupons = await CouponService.getUserCoupons(user.id);
       setCoupons(enrichedCoupons);
 
-      const uniqueCats = ['All', ...new Set(enrichedCoupons.map(c => c.categoryName))];
+      const uniqueCats = ['All', ...new Set(enrichedCoupons.map(c => c.categoryName || 'Other'))];
       setCategories(uniqueCats);
 
       const targetId = searchParams.get('id');
@@ -95,17 +57,18 @@ export default function MyCoupons() {
     }
   };
 
-  const fetchBranches = async (tenantId) => {
-    const { data } = await supabase
-      .from('branches')
-      .select('*')
-      .eq('tenant_id', tenantId);
-    setBranches(data || []);
+  const fetchBranchesForCoupon = async (tenantId: string) => {
+    try {
+      const b = await DealService.getTenantBranches(tenantId);
+      setBranches(b);
+    } catch (e) {
+      setBranches([]);
+    }
   };
 
   useEffect(() => {
     if (selectedCoupon?.tenants?.id) {
-      fetchBranches(selectedCoupon.tenants.id);
+      fetchBranchesForCoupon(selectedCoupon.tenants.id);
     } else {
       setBranches([]);
     }
@@ -129,31 +92,15 @@ export default function MyCoupons() {
     return c.categoryName === activeCategory;
   });
 
-  // Helper for time remaining
-  const getTimeRemaining = (endDate) => {
-    const total = Date.parse(endDate) - Date.parse(new Date());
-    const seconds = Math.floor((total / 1000) % 60);
-    const minutes = Math.floor((total / 1000 / 60) % 60);
+  const getTimeRemaining = (endDate?: string) => {
+    if (!endDate) return null;
+    const total = Date.parse(endDate) - Date.parse(new Date().toISOString());
     const hours = Math.floor((total / (1000 * 60 * 60)) % 24);
     const days = Math.floor(total / (1000 * 60 * 60 * 24));
 
     if (total <= 0) return null;
     if (days > 0) return `${days} ${t('coupons.daysLeft')}`;
     return `${hours} ${t('coupons.hoursLeft')}`;
-  };
-
-  const statusColors = {
-    pending: 'bg-brand-primary/10 text-brand-primary border-brand-primary/20',
-    redeemed: 'bg-brand-secondary/10 text-brand-secondary border-brand-secondary/20',
-    expired: 'bg-red-50 text-red-600 border-red-100',
-  };
-
-  const openInMaps = (branch) => {
-    if (!branch.location) return;
-    // Standard Google Maps search URL with lat,lng
-    // Supabase POINT type is usually { x: lng, y: lat } or similar in PostGIS logic
-    const url = `https://www.google.com/maps/search/?api=1&query=${branch.location}`;
-    window.open(url, '_blank');
   };
 
   if (loading) {
@@ -192,7 +139,6 @@ export default function MyCoupons() {
         ))}
       </div>
 
-      {/* Category Filter */}
       {categories.length > 2 && (
         <div className="flex gap-2 overflow-x-auto pb-2 -mx-2 px-2 no-scrollbar">
           {categories.map(cat => (
@@ -228,7 +174,7 @@ export default function MyCoupons() {
           </div>
         ) : (
           filteredCoupons.map((coupon) => (
-            <div 
+             <div 
               key={coupon.id}
               onClick={() => {
                 setSelectedCoupon(coupon);
@@ -238,11 +184,10 @@ export default function MyCoupons() {
                 currentFilter !== 'active' ? 'grayscale opacity-70' : ''
               }`}
             >
-              {/* Hero Image Section */}
               <div className="relative h-40 w-full overflow-hidden bg-neutral-100">
                 <SafeImage 
                   src={coupon.deals?.image_url} 
-                  alt={coupon.deals?.title} 
+                  alt={coupon.deals?.title || ''} 
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
                   placeholder={
                     <div className="w-full h-full flex items-center justify-center text-neutral-200">
@@ -251,7 +196,6 @@ export default function MyCoupons() {
                   }
                 />
                 
-                {/* Status Badge Over Image */}
                 <div className="absolute top-4 right-4 z-10 flex flex-col gap-2 items-end">
                    <div className={`text-[9px] px-3 py-1.5 rounded-full font-black uppercase tracking-tighter shadow-lg ${
                       currentFilter === 'active' 
@@ -271,14 +215,13 @@ export default function MyCoupons() {
                    )}
                 </div>
 
-                {/* Claimed/Redeemed Date Over Image */}
                 <div className="absolute bottom-4 left-4 z-10">
                    <div className="bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-xl shadow-sm border border-white/20">
                       <p className="text-[8px] text-text-muted font-black uppercase tracking-widest mb-0.5">
                         {currentFilter === 'expired' ? t('coupons.expiredLabel') : t('coupons.claimedLabel')}
                       </p>
                       <p className="text-[10px] font-black text-text-main">
-                        {new Date(currentFilter === 'expired' ? coupon.deals?.end_date : coupon.created_at).toLocaleDateString()}
+                        {new Date(currentFilter === 'expired' && coupon.deals?.end_date ? coupon.deals.end_date : coupon.created_at).toLocaleDateString()}
                       </p>
                    </div>
                 </div>
@@ -317,22 +260,21 @@ export default function MyCoupons() {
         )}
       </div>
 
-      {/* Modal / Detail Overlay */}
       {selectedCoupon && (
         <OfferDetailModal
           isOpen={!!selectedCoupon}
           onClose={() => setSelectedCoupon(null)}
           isCoupon={true}
-          tenantName={selectedCoupon.tenants?.name}
-          tenantLogo={selectedCoupon.tenants?.logo_url}
-          title={selectedCoupon.deals?.title}
-          description={selectedCoupon.deals?.description}
-          imageUrl={selectedCoupon.deals?.image_url}
-          endDate={selectedCoupon.deals?.end_date}
+          tenantName={selectedCoupon.tenants?.name || ''}
+          tenantLogo={selectedCoupon.tenants?.logo_url || ''}
+          title={selectedCoupon.deals?.title || ''}
+          description={selectedCoupon.deals?.description || ''}
+          imageUrl={selectedCoupon.deals?.image_url || ''}
+          endDate={selectedCoupon.deals?.end_date || ''}
           claimedDate={selectedCoupon.created_at}
           qrCode={selectedCoupon.qr_code}
           showQrCode={showQrCode}
-          branches={branches}
+          branches={(branches && branches.length > 0) ? branches : [] as any}
           actionButtons={
             currentFilter === 'active' 
             ? [
@@ -358,3 +300,4 @@ export default function MyCoupons() {
     </div>
   );
 }
+

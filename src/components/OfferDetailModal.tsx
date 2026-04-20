@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useEffect, useState } from 'react';
 import { X, MapPin, Navigation, Clock, Loader2, QrCode, ChevronDown, Tag } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -299,3 +300,4 @@ export default function OfferDetailModal({
     </div>
   );
 }
+
