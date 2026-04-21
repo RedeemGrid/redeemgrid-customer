@@ -47,7 +47,8 @@
     "viewOffer": "Ver Oferta",
     "viewDetails": "Ver Detalles",
     "expires": "Vence:",
-    "viewCoupon": "Ver Cupón"
+    "viewCoupon": "Ver Cupón",
+    "showingLastKnown": "Mostrando ofertas de tu última ubicación..."
   },
   "login": {
     "welcome": "Bienvenido a",

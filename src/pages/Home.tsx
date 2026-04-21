@@ -16,6 +16,126 @@ import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 
 const PAGE_SIZE = 20;
 
+const STORAGE_KEYS = {
+  LAST_DEALS: 'rg_last_known_deals',
+  LAST_COORDS: 'rg_last_known_coords'
+};
+
+// Helper for distance calculation (Haversine formula)
+function getDistanceInKm(lat1: number, lon1: number, lat2: number, lon2: number) {
+  const R = 6371; 
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
+
+interface DealCardProps {
+  deal: EnrichedDeal;
+  isClaimed: boolean;
+  onClick: () => void;
+  t: any;
+}
+
+const DealCard = ({ deal, isClaimed, onClick, t }: DealCardProps) => {
+  const endDateString = deal.end_date ? new Date(deal.end_date).toLocaleDateString() : null;
+  
+  return (
+    <div
+      onClick={onClick}
+      className="bg-white rounded-[32px] shadow-premium hover:shadow-card-hover hover:-translate-y-1 transition-all duration-500 group cursor-pointer flex flex-col h-full relative"
+    >
+      <div className="relative h-44 w-full bg-neutral-100 rounded-t-[32px] overflow-hidden">
+        <SafeImage
+          src={deal.image_url}
+          alt=""
+          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+          placeholder={
+            <div className="w-full h-full bg-gradient-to-br from-neutral-50 to-neutral-100 flex flex-col items-center justify-center text-neutral-300">
+              <Tag size={40} strokeWidth={1} className="opacity-20 mb-2" />
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-30">Nabbu</p>
+            </div>
+          }
+        />
+
+        <div className="absolute top-6 left-6 z-10">
+          <div className="bg-white/95 px-4 py-2 rounded-2xl shadow-lg border border-black/5 flex items-center gap-2">
+            {deal.deal_title?.includes('%') ? (
+              <>
+                <div className="w-2 h-2 bg-brand-secondary rounded-full"></div>
+                <span className="text-[11px] font-black text-text-main uppercase tracking-wider">
+                  {deal.deal_title.match(/\d+%/)?.[0]}
+                </span>
+              </>
+            ) : (
+              <div className="flex items-center gap-1.5">
+                <Tag size={12} className="text-brand-primary" />
+                <span className="text-[10px] font-black text-brand-primary uppercase tracking-tighter">Nabbu</span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="absolute top-4 right-4 z-10">
+          <div className="bg-brand-primary text-white text-[9px] font-black px-3 py-1.5 rounded-full uppercase tracking-tighter shadow-lg shadow-brand-primary/20">
+            {t(`db_categories.${deal.category.charAt(0).toUpperCase() + deal.category.slice(1).toLowerCase()}`, { defaultValue: deal.category })}
+          </div>
+        </div>
+      </div>
+
+      <div className="p-6 flex-1 flex flex-col">
+        <div className="flex justify-between items-start mb-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center p-1 border border-black/5 overflow-hidden flex-shrink-0">
+              {deal.tenant_logo ? (
+                <img src={deal.tenant_logo} alt="Logo" className="w-full h-full object-contain" />
+              ) : (
+                <div className="w-full h-full bg-brand-primary/5 flex items-center justify-center text-brand-primary font-bold text-xs">
+                  {deal.tenant_name?.[0] || 'N'}
+                </div>
+              )}
+            </div>
+            <div>
+              <p className="text-[10px] text-text-muted font-black uppercase tracking-[0.15em] mb-0.5">{deal.tenant_name}</p>
+              <div className="flex items-center gap-2">
+                <span className="text-brand-secondary text-[10px] font-black bg-brand-secondary/5 px-2 py-0.5 rounded-md">
+                  {Math.round(deal.distance / 100) / 10}km
+                </span>
+                {endDateString && (
+                  <p className="text-text-muted text-[10px] font-bold flex items-center gap-1">
+                    <Clock size={10} /> {endDateString}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <h3 className="font-bold text-text-main text-xl leading-snug group-hover:text-brand-primary transition-colors mb-4 line-clamp-2">
+          {deal.deal_title}
+        </h3>
+
+        <div className="mt-auto pt-5 border-t border-black/5 flex items-center justify-between">
+          <div className="flex items-center gap-2 text-text-muted">
+            <MapPin size={12} className="text-brand-primary" />
+            <span className="text-[11px] font-bold truncate max-w-[140px] uppercase tracking-tighter">{deal.branch_name}</span>
+          </div>
+          <div className={`flex-shrink-0 rounded-full font-black px-6 py-2.5 transition-all text-[11px] uppercase tracking-wider ${
+            isClaimed
+              ? 'bg-brand-primary/5 text-brand-primary'
+              : 'bg-brand-secondary text-white shadow-md shadow-brand-secondary/20'
+          }`}>
+            {isClaimed ? t('home.viewOffer') : t('home.viewDetails')}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export default function Home() {
   const { t } = useTranslation();
   const { permissionStatus, coords, requestLocation } = useGeolocation();
@@ -24,6 +144,7 @@ export default function Home() {
   const queryClient = useQueryClient();
   const { isOnline } = useOnlineStatus();
 
+  // ── State ────────────────────────────────────────────────────────────────────
   const [pageOffset, setPageOffset] = useState(0);
   const [allDeals, setAllDeals] = useState<EnrichedDeal[]>([]);
   const [hasMore, setHasMore] = useState(false);
@@ -33,6 +154,20 @@ export default function Home() {
   const [dealBranches, setDealBranches] = useState<Branch[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState('All');
+  const [isUsingCachedLocation, setIsUsingCachedLocation] = useState(false);
+
+  // ── Initialization from Cache ────────────────────────────────────────────────
+  useState(() => {
+    try {
+      const savedDeals = localStorage.getItem(STORAGE_KEYS.LAST_DEALS);
+      if (savedDeals) {
+        setAllDeals(JSON.parse(savedDeals));
+        setIsUsingCachedLocation(true);
+      }
+    } catch (e) {
+      console.error('Failed to load cached deals', e);
+    }
+  });
 
   const lastFetchedCoordsRef = useRef<{ lat: number; lng: number } | null>(null);
 
@@ -40,9 +175,23 @@ export default function Home() {
   const { isLoading, isError, refetch } = useQuery({
     queryKey: ['nearby-deals', coords?.latitude, coords?.longitude],
     queryFn: async () => {
-      if (!coords) return { deals: [], hasMore: false };
+      if (!coords) return { deals: allDeals, hasMore: false };
 
       const { latitude: lat, longitude: lng } = coords;
+
+      // Distance check to determine if we should show skeletons or just update in background
+      const savedCoordsStr = localStorage.getItem(STORAGE_KEYS.LAST_COORDS);
+      if (savedCoordsStr) {
+        const savedCoords = JSON.parse(savedCoordsStr);
+        const distance = getDistanceInKm(lat, lng, savedCoords.lat, savedCoords.lng);
+        // If moved more than 1km, we treat it as a new location
+        if (distance > 1) {
+          if (isUsingCachedLocation) {
+            setAllDeals([]); // Wipe cache to show skeletons
+            setIsUsingCachedLocation(false);
+          }
+        }
+      }
 
       // Guard: skip if coords unchanged
       if (
@@ -55,6 +204,12 @@ export default function Home() {
 
       lastFetchedCoordsRef.current = { lat, lng };
       const result = await DealService.getNearbyDeals(lat, lng, 50000, PAGE_SIZE, 0);
+      
+      // Update cache
+      localStorage.setItem(STORAGE_KEYS.LAST_DEALS, JSON.stringify(result.deals));
+      localStorage.setItem(STORAGE_KEYS.LAST_COORDS, JSON.stringify({ lat, lng }));
+      setIsUsingCachedLocation(false);
+
       setPageOffset(0);
       setHasMore(result.hasMore);
       setAllDeals(result.deals);
@@ -113,7 +268,6 @@ export default function Home() {
     setClaimingId(deal.deal_id);
     try {
       const coupon = await CouponService.claimDeal(user.id, deal);
-      // Invalidate the coupons map so the UI refreshes without a manual reload
       queryClient.invalidateQueries({ queryKey: ['user-coupons-map', user.id] });
       navigate(`/coupons?id=${coupon.id}`);
     } catch (err) {
@@ -151,7 +305,34 @@ export default function Home() {
   if (permissionStatus === 'loading') {
     return (
       <div className="grid gap-6">
-        {Array.from({ length: 4 }).map((_, i) => <DealCardSkeleton key={i} />)}
+        {allDeals.length > 0 ? (
+          <>
+            <div className="bg-brand-primary/5 border border-brand-primary/10 rounded-2xl px-5 py-4 mb-2 animate-in fade-in slide-in-from-top-2 flex items-center gap-4">
+              <div className="w-10 h-10 bg-brand-primary/10 rounded-xl flex items-center justify-center text-brand-primary">
+                <Clock size={20} className="animate-pulse" />
+              </div>
+              <div className="flex-1">
+                <p className="text-xs font-black uppercase tracking-widest text-brand-primary">
+                  {t('home.showingLastKnown')}
+                </p>
+                <p className="text-[10px] font-bold text-brand-primary/60 uppercase tracking-tighter mt-0.5">
+                  Localizando tu posición actual...
+                </p>
+              </div>
+            </div>
+            {filteredDeals.map((deal) => (
+              <DealCard 
+                key={`${deal.deal_id}-${deal.branch_name}`} 
+                deal={deal} 
+                isClaimed={!!userCoupons[deal.deal_id]}
+                onClick={() => handleSelectDeal(deal)}
+                t={t}
+              />
+            ))}
+          </>
+        ) : (
+          Array.from({ length: 4 }).map((_, i) => <DealCardSkeleton key={i} />)
+        )}
       </div>
     );
   }
@@ -304,108 +485,20 @@ export default function Home() {
             )}
           </div>
         ) : (
-          filteredDeals.map((deal, idx) => {
-            const isClaimed = !!userCoupons[deal.deal_id];
-            const endDateString = deal.end_date ? new Date(deal.end_date).toLocaleDateString() : null;
-
-            return (
-              <div
-                key={`${deal.deal_id}-${deal.branch_name || idx}`}
-                onClick={() => handleSelectDeal(deal)}
-                className="bg-white rounded-[32px] shadow-premium hover:shadow-card-hover hover:-translate-y-1 transition-all duration-500 group cursor-pointer flex flex-col h-full relative"
-              >
-                <div className="relative h-44 w-full bg-neutral-100 rounded-t-[32px] overflow-hidden">
-                  <SafeImage
-                    src={deal.image_url}
-                    alt=""
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                    placeholder={
-                      <div className="w-full h-full bg-gradient-to-br from-neutral-50 to-neutral-100 flex flex-col items-center justify-center text-neutral-300">
-                        <Tag size={40} strokeWidth={1} className="opacity-20 mb-2" />
-                        <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-30">Nabbu</p>
-                      </div>
-                    }
-                  />
-
-                  <div className="absolute top-6 left-6 z-10">
-                    <div className="bg-white/95 px-4 py-2 rounded-2xl shadow-lg border border-black/5 flex items-center gap-2">
-                      {deal.deal_title?.includes('%') ? (
-                        <>
-                          <div className="w-2 h-2 bg-brand-secondary rounded-full"></div>
-                          <span className="text-[11px] font-black text-text-main uppercase tracking-wider">
-                            {deal.deal_title.match(/\d+%/)?.[0]}
-                          </span>
-                        </>
-                      ) : (
-                        <div className="flex items-center gap-1.5">
-                          <Tag size={12} className="text-brand-primary" />
-                          <span className="text-[10px] font-black text-brand-primary uppercase tracking-tighter">Nabbu</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="absolute top-4 right-4 z-10">
-                    <div className="bg-brand-primary text-white text-[9px] font-black px-3 py-1.5 rounded-full uppercase tracking-tighter shadow-lg shadow-brand-primary/20">
-                      {t(`db_categories.${deal.category.charAt(0).toUpperCase() + deal.category.slice(1).toLowerCase()}`, { defaultValue: deal.category })}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="p-6 flex-1 flex flex-col">
-                  <div className="flex justify-between items-start mb-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center p-1 border border-black/5 overflow-hidden flex-shrink-0">
-                        {deal.tenant_logo ? (
-                          <img src={deal.tenant_logo} alt="Logo" className="w-full h-full object-contain" />
-                        ) : (
-                          <div className="w-full h-full bg-brand-primary/5 flex items-center justify-center text-brand-primary font-bold text-xs">
-                            {deal.tenant_name?.[0] || 'N'}
-                          </div>
-                        )}
-                      </div>
-                      <div>
-                        <p className="text-[10px] text-text-muted font-black uppercase tracking-[0.15em] mb-0.5">{deal.tenant_name}</p>
-                        <div className="flex items-center gap-2">
-                          <span className="text-brand-secondary text-[10px] font-black bg-brand-secondary/5 px-2 py-0.5 rounded-md">
-                            {Math.round(deal.distance / 100) / 10}km
-                          </span>
-                          {endDateString && (
-                            <p className="text-text-muted text-[10px] font-bold flex items-center gap-1">
-                              <Clock size={10} /> {endDateString}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <h3 className="font-bold text-text-main text-xl leading-snug group-hover:text-brand-primary transition-colors mb-4 line-clamp-2">
-                    {deal.deal_title}
-                  </h3>
-
-                  <div className="mt-auto pt-5 border-t border-black/5 flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-text-muted">
-                      <MapPin size={12} className="text-brand-primary" />
-                      <span className="text-[11px] font-bold truncate max-w-[140px] uppercase tracking-tighter">{deal.branch_name}</span>
-                    </div>
-                    <div className={`flex-shrink-0 rounded-full font-black px-6 py-2.5 transition-all text-[11px] uppercase tracking-wider ${
-                      isClaimed
-                        ? 'bg-brand-primary/5 text-brand-primary'
-                        : 'bg-brand-secondary text-white shadow-md shadow-brand-secondary/20'
-                    }`}>
-                      {isClaimed ? t('home.viewOffer') : t('home.viewDetails')}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            );
-          })
+          filteredDeals.map((deal) => (
+            <DealCard 
+              key={`${deal.deal_id}-${deal.branch_name}`} 
+              deal={deal} 
+              isClaimed={!!userCoupons[deal.deal_id]}
+              onClick={() => handleSelectDeal(deal)}
+              t={t}
+            />
+          ))
         )}
       </div>
 
       {!isLoading && allDeals.length > 0 && (
-        <div className="flex justify-center pb-4">
+        <div className="flex justify-center pb-4 mt-8">
           {hasMore ? (
             <button
               onClick={loadMore}
