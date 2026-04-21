@@ -9,8 +9,8 @@ import {
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { useTranslation } from 'react-i18next';
-import OfflineOverlay from './OfflineOverlay';
-import ReloadPrompt from './ReloadPrompt';
+import OfflineOverlay from '@/components/OfflineOverlay';
+import ReloadPrompt from '@/components/ReloadPrompt';
 
 export default function Layout() {
   const { t } = useTranslation();
@@ -64,6 +64,7 @@ export default function Layout() {
   
   return (
     <div className="min-h-screen bg-bg-page text-text-main selection:bg-brand-primary/10 pb-24">
+      {/* Non-blocking offline banner — always on top */}
       <OfflineOverlay />
       <ReloadPrompt />
       {/* Background blobs */}

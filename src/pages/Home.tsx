@@ -12,6 +12,7 @@ import { DealService } from '@/services/dealService';
 import { CouponService } from '@/services/couponService';
 import type { EnrichedDeal, Branch } from '@/types/models';
 import { ConflictError } from '@/lib/errors';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 
 const PAGE_SIZE = 20;
 
@@ -21,6 +22,7 @@ export default function Home() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { isOnline } = useOnlineStatus();
 
   const [pageOffset, setPageOffset] = useState(0);
   const [allDeals, setAllDeals] = useState<EnrichedDeal[]>([]);
@@ -441,11 +443,11 @@ export default function Home() {
           actionButtons={[
             {
               id: 'claim-btn',
-              text: userCoupons[selectedDeal.deal_id] ? t('home.viewCoupon') : t('home.claimDeal'),
+              text: userCoupons[selectedDeal.deal_id] ? t('home.viewCoupon') : (isOnline ? t('home.claimDeal') : 'Requiere conexión'),
               onClick: () => claimDeal(selectedDeal),
-              disabled: claimingId === selectedDeal.deal_id || userCoupons[selectedDeal.deal_id]?.status === 'redeemed',
+              disabled: !isOnline || claimingId === selectedDeal.deal_id || userCoupons[selectedDeal.deal_id]?.status === 'redeemed',
               loading: claimingId === selectedDeal.deal_id,
-              primary: true,
+              primary: !!isOnline,
               icon: Tag,
             }
           ]}

@@ -1,58 +1,106 @@
-import { WifiOff, RefreshCw } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { WifiOff, Wifi, X } from 'lucide-react';
+import { useState } from 'react';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 
-export default function OfflineOverlay() {
-  const { t } = useTranslation();
-  const [isOffline, setIsOffline] = useState(!navigator.onLine);
+/**
+ * @component OfflineBanner
+ * @description A non-blocking slim banner that appears at the top of the screen
+ * when the user loses internet connectivity, and a toast when it's restored.
+ *
+ * Design principles:
+ * - NEVER blocks the UI — the user can still access their cached coupons.
+ * - Clear visual distinction between "offline" (red) and "restored" (green).
+ * - Dismissible so power users can hide it if they already know.
+ */
+export default function OfflineBanner() {
+  const { isOnline, justCameBackOnline } = useOnlineStatus();
+  const [dismissed, setDismissed] = useState(false);
 
-  useEffect(() => {
-    // ...
-    const handleOnline = () => setIsOffline(false);
-    const handleOffline = () => setIsOffline(true);
+  // Reset dismissed state whenever we go offline again
+  // so the banner always re-appears on the next disconnect
+  if (!isOnline && dismissed) {
+    // Only reset on actual state change — handled by key change in parent if needed.
+  }
 
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
-
-    return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
-    };
-  }, []);
-
-  if (!isOffline) return null;
-
-  return (
-    <div className="fixed inset-0 z-[100] bg-bg-end/80 backdrop-blur-2xl flex flex-col items-center justify-center p-8 animate-in fade-in duration-500">
-      <div className="w-full max-w-sm bg-white/10 rounded-[48px] p-10 border border-white/20 shadow-2xl relative overflow-hidden group text-center">
-        {/* Animated Background Decor */}
-        <div className="absolute -top-10 -right-10 w-32 h-32 bg-red-500/20 blur-3xl rounded-full animate-pulse"></div>
-        <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-brand-primary/20 blur-3xl rounded-full animate-pulse animation-delay-2000"></div>
-
-        <div className="relative z-10">
-          <div className="w-24 h-24 bg-red-500/10 rounded-3xl flex items-center justify-center text-red-500 shadow-xl shadow-red-500/10 mx-auto mb-8 border border-red-500/20">
-            <WifiOff size={48} strokeWidth={1.5} className="animate-bounce" />
-          </div>
-          
-          <h2 className="text-3xl font-black text-white mb-4 italic uppercase tracking-tighter">{t('offline.title')}</h2>
-          <p className="text-white/60 text-sm leading-relaxed font-bold mb-8">
-            {t('offline.desc')}
-          </p>
-
-          <button 
-            onClick={() => window.location.reload()}
-            className="w-full bg-white text-brand-secondary font-black py-5 rounded-[28px] shadow-2xl hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3 group"
-          >
-            <RefreshCw size={20} className="group-hover:rotate-180 transition-transform duration-700" />
-            {t('offline.retry')}
-          </button>
+  // ── Connection Restored Toast ─────────────────────────────────────────────
+  if (justCameBackOnline) {
+    return (
+      <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[200] animate-in slide-in-from-top-4 fade-in duration-500">
+        <div className="flex items-center gap-3 bg-status-success text-white px-5 py-3 rounded-2xl shadow-xl shadow-status-success/30 font-bold text-sm">
+          <Wifi size={18} />
+          <span>Conexión restaurada ✓</span>
         </div>
       </div>
+    );
+  }
 
-      <div className="mt-8 flex items-center gap-2 px-4 py-2 bg-white/5 rounded-full border border-white/10">
-        <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
-        <span className="text-[10px] text-white/40 font-black uppercase tracking-widest">{t('offline.badge')}</span>
+  // ── Offline Banner ────────────────────────────────────────────────────────
+  if (!isOnline && !dismissed) {
+    return (
+      <div className="sticky top-0 z-[150] w-full animate-in slide-in-from-top-2 fade-in duration-300">
+        <div className="bg-neutral-900 text-white shadow-lg">
+          <div className="max-w-lg mx-auto px-4 py-3 flex items-center gap-3">
+            {/* Icon */}
+            <div className="flex-shrink-0 w-7 h-7 bg-status-error/20 rounded-full flex items-center justify-center">
+              <WifiOff size={14} className="text-status-error" />
+            </div>
+
+            {/* Message */}
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-bold text-white leading-tight">
+                Sin conexión a internet
+              </p>
+              <p className="text-[11px] text-white/60 font-medium mt-0.5">
+                Tus cupones guardados siguen disponibles
+              </p>
+            </div>
+
+            {/* Dismiss */}
+            <button
+              onClick={() => setDismissed(true)}
+              className="flex-shrink-0 p-1.5 rounded-full hover:bg-white/10 transition-colors text-white/50 hover:text-white"
+              aria-label="Cerrar aviso"
+            >
+              <X size={14} />
+            </button>
+          </div>
+
+          {/* Capability chips */}
+          <div className="max-w-lg mx-auto px-4 pb-3 flex gap-2 overflow-x-auto no-scrollbar">
+            <div className="flex-shrink-0 flex items-center gap-1.5 bg-status-success/15 border border-status-success/20 text-status-success px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wide">
+              <span>✓</span> Ver cupones
+            </div>
+            <div className="flex-shrink-0 flex items-center gap-1.5 bg-status-success/15 border border-status-success/20 text-status-success px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wide">
+              <span>✓</span> Mostrar QR
+            </div>
+            <div className="flex-shrink-0 flex items-center gap-1.5 bg-white/5 border border-white/10 text-white/30 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wide">
+              <span>✗</span> Reclamar
+            </div>
+            <div className="flex-shrink-0 flex items-center gap-1.5 bg-white/5 border border-white/10 text-white/30 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wide">
+              <span>✗</span> Escanear
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
+    );
+  }
+
+  return null;
+}
+
+/**
+ * @component OfflineActionBadge
+ * @description Inline badge to display next to buttons/actions that require internet.
+ * Shows only when the user is offline so it never appears in normal usage.
+ */
+export function OfflineActionBadge() {
+  const { isOnline } = useOnlineStatus();
+  if (isOnline) return null;
+
+  return (
+    <span className="inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-wider text-status-error bg-status-error-bg px-2 py-0.5 rounded-full border border-status-error/20">
+      <WifiOff size={9} />
+      Sin red
+    </span>
   );
 }

@@ -6,11 +6,14 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { WifiOff } from 'lucide-react';
 
 export default function Scanner() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { isOnline } = useOnlineStatus();
   const [scanResult, setScanResult] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const scannerRef = useRef<Html5Qrcode | null>(null);
@@ -45,6 +48,8 @@ export default function Scanner() {
   };
 
   useEffect(() => {
+    if (!isOnline) return; // Don't even start scanner if offline
+
     // Initialize the headless scanner to avoid English UI injection
     const html5QrCode = new Html5Qrcode("reader");
 
@@ -81,7 +86,7 @@ export default function Scanner() {
         scannerRef.current.stop().catch(err => console.error("Error clearing scanner", err));
       }
     };
-  }, []);
+  }, [isOnline]); // Re-run if connection status changes
 
   return (
     <div className="min-h-[80vh] flex flex-col items-center justify-center p-4">
@@ -106,7 +111,19 @@ export default function Scanner() {
           </div>
         )}
         
-        <div id="reader" className="w-full h-full absolute inset-0 z-0"></div>
+        {!isOnline ? (
+          <div className="absolute inset-0 z-20 bg-neutral-900 flex flex-col items-center justify-center p-6 text-center animate-in fade-in">
+            <div className="w-16 h-16 bg-status-error/10 rounded-2xl flex items-center justify-center text-status-error mb-4">
+              <WifiOff size={32} />
+            </div>
+            <h3 className="text-white font-black text-lg mb-2 uppercase tracking-tight">Requiere Conexión</h3>
+            <p className="text-white/50 text-xs font-bold leading-relaxed px-4">
+              No puedes canjear cupones sin conexión a internet. Vuelve a intentarlo cuando recuperes la señal.
+            </p>
+          </div>
+        ) : (
+          <div id="reader" className="w-full h-full absolute inset-0 z-0"></div>
+        )}
         
         {/* Viewfinder Overlay Mask (CSS) */}
         {!scanResult && !isProcessing && (
