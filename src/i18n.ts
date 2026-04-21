@@ -7,7 +7,13 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 const localeModules = import.meta.glob('./locales/*.json', { eager: true });
 
 const resources = {};
-export const availableLanguages = [];
+
+export interface Language {
+  code: string;
+  name: string;
+}
+
+export const availableLanguages: Language[] = [];
 
 Object.keys(localeModules).forEach((path) => {
   // Extract language code from filename, e.g., './locales/en.json' -> 'en'

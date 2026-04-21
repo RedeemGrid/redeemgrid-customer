@@ -75,7 +75,12 @@
     "language": "Idioma",
     "support": "Ayuda y Soporte",
     "comingSoon": "Próximamente",
-    "faqContact": "Preguntas Frecuentes y Contacto"
+    "faqContact": "Preguntas Frecuentes y Contacto",
+    "searchRadius": "Radio de búsqueda",
+    "distanceUnit": "Unidad de distancia",
+    "kilometers": "Kilómetros",
+    "miles": "Millas",
+    "radiusValue": "{{val}} {{unit}}"
   },
   "terms": {
     "title": "Términos y Privacidad",

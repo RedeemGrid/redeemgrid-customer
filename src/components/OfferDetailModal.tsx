@@ -4,6 +4,8 @@ import { useTranslation } from 'react-i18next';
 import { QRCodeSVG } from 'qrcode.react';
 import SafeImage from './SafeImage';
 import type { LucideIcon } from 'lucide-react';
+import { usePreferences } from '@/context/PreferencesContext';
+import { formatDistance } from '@/lib/distanceUtils';
 
 interface ActionButton {
   id: string;
@@ -60,6 +62,7 @@ export default function OfferDetailModal({
   actionButtons = [],
 }: OfferDetailModalProps) {
   const { t } = useTranslation();
+  const { distanceUnit } = usePreferences();
   const [isBranchesOpen, setIsBranchesOpen] = useState(false);
 
   if (!isOpen) return null;
@@ -300,7 +303,9 @@ export default function OfferDetailModal({
                   <div className="flex-1 pr-4">
                     <p className="font-bold text-text-main text-base">{branch.name || branch.branch_name}</p>
                     {branch.distance && (
-                       <p className="text-[10px] text-brand-secondary font-bold uppercase mt-1">{t('offerModal.distanceAway', { val: Math.round(branch.distance / 100) / 10 })}</p>
+                       <p className="text-[10px] text-brand-secondary font-bold uppercase mt-1">
+                         {formatDistance(branch.distance, distanceUnit, t)}
+                       </p>
                     )}
                     <p className="text-xs text-text-muted font-medium mt-1 uppercase tracking-tighter flex items-center gap-1.5 opacity-60">
                       <MapPin size={10} /> {t('offerModal.viewOnMap')}

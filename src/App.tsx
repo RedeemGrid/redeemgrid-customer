@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from '@/context/AuthContext';
 import { QueryProvider } from '@/context/QueryProvider';
+import { PreferencesProvider } from '@/context/PreferencesContext';
 import Login from '@/pages/Login';
 import Home from '@/pages/Home';
 import MyCoupons from '@/pages/MyCoupons';
@@ -39,8 +40,9 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
 function App() {
   return (
     <QueryProvider>
-      <AuthProvider>
-        <BrowserRouter basename={import.meta.env.BASE_URL}>
+      <PreferencesProvider>
+        <AuthProvider>
+          <BrowserRouter basename={import.meta.env.BASE_URL}>
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/terms" element={<Terms />} />
@@ -65,8 +67,9 @@ function App() {
           </Routes>
         </BrowserRouter>
       </AuthProvider>
-    </QueryProvider>
-  );
+    </PreferencesProvider>
+  </QueryProvider>
+);
 }
 
 export default App;

@@ -75,7 +75,12 @@
     "language": "Language",
     "support": "Help & Support",
     "comingSoon": "Coming Soon",
-    "faqContact": "FAQs & Contact"
+    "faqContact": "FAQs & Contact",
+    "searchRadius": "Search Radius",
+    "distanceUnit": "Distance Unit",
+    "kilometers": "Kilometers",
+    "miles": "Miles",
+    "radiusValue": "{{val}} {{unit}}"
   },
   "terms": {
     "title": "Terms & Privacy",

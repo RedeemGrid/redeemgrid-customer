@@ -13,6 +13,8 @@ import { CouponService } from '@/services/couponService';
 import type { EnrichedDeal, Branch } from '@/types/models';
 import { ConflictError } from '@/lib/errors';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { usePreferences } from '@/context/PreferencesContext';
+import { formatDistance } from '@/lib/distanceUtils';
 
 const PAGE_SIZE = 20;
 
@@ -41,6 +43,7 @@ interface DealCardProps {
 }
 
 const DealCard = ({ deal, isClaimed, onClick, t }: DealCardProps) => {
+  const { distanceUnit } = usePreferences();
   const endDateString = deal.end_date ? new Date(deal.end_date).toLocaleDateString() : null;
   
   return (
@@ -102,7 +105,7 @@ const DealCard = ({ deal, isClaimed, onClick, t }: DealCardProps) => {
               <p className="text-[10px] text-text-muted font-black uppercase tracking-[0.15em] mb-0.5">{deal.tenant_name}</p>
               <div className="flex items-center gap-2">
                 <span className="text-brand-secondary text-[10px] font-black bg-brand-secondary/5 px-2 py-0.5 rounded-md">
-                  {Math.round(deal.distance / 100) / 10}km
+                  {formatDistance(deal.distance, distanceUnit, t)}
                 </span>
                 {endDateString && (
                   <p className="text-text-muted text-[10px] font-bold flex items-center gap-1">
@@ -143,6 +146,7 @@ export default function Home() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { isOnline } = useOnlineStatus();
+  const { radiusInMeters } = usePreferences();
 
   // ── State ────────────────────────────────────────────────────────────────────
   const [pageOffset, setPageOffset] = useState(0);
@@ -203,7 +207,7 @@ export default function Home() {
       }
 
       lastFetchedCoordsRef.current = { lat, lng };
-      const result = await DealService.getNearbyDeals(lat, lng, 50000, PAGE_SIZE, 0);
+      const result = await DealService.getNearbyDeals(lat, lng, radiusInMeters, PAGE_SIZE, 0);
       
       // Update cache
       localStorage.setItem(STORAGE_KEYS.LAST_DEALS, JSON.stringify(result.deals));
@@ -231,7 +235,7 @@ export default function Home() {
     setIsFetchingMore(true);
     const newOffset = pageOffset + PAGE_SIZE;
     try {
-      const result = await DealService.getNearbyDeals(coords.latitude, coords.longitude, 50000, PAGE_SIZE, newOffset);
+      const result = await DealService.getNearbyDeals(coords.latitude, coords.longitude, radiusInMeters, PAGE_SIZE, newOffset);
       setPageOffset(newOffset);
       setHasMore(result.hasMore);
       setAllDeals(prev => [...prev, ...result.deals]);
