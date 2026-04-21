@@ -62,7 +62,7 @@ export const useGeolocation = (options: PositionOptions = {}) => {
           error: err.message,
         }));
       },
-      { enableHighAccuracy: false, timeout: 10000, maximumAge: 60000, ...optionsRef.current }
+      { enableHighAccuracy: false, timeout: 30000, maximumAge: 300000, ...optionsRef.current }
     );
   }, []);
 

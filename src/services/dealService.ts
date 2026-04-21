@@ -56,10 +56,19 @@ export class DealService {
       return acc;
     }, {});
 
-    const enrichedDeals: EnrichedDeal[] = rawDeals.map((d: any) => {
+    const timeNow = Date.now();
+    
+    // Filter and map to enriched deals
+    const enrichedDeals: EnrichedDeal[] = rawDeals.reduce((acc: EnrichedDeal[], d: any) => {
       const detail = detailsMap[d.deal_id];
+      
+      // Filter out deals that have expired
+      if (detail?.end_date && new Date(detail.end_date).getTime() < timeNow) {
+        return acc; // Skip
+      }
+
       const tenant = detail?.tenant;
-      return {
+      acc.push({
         deal_id: d.deal_id,
         branch_name: d.branch_name,
         distance: d.distance,
@@ -72,8 +81,10 @@ export class DealService {
         end_date: detail?.end_date,
         image_url: detail?.image_url,
         description: detail?.description,
-      };
-    });
+      });
+
+      return acc;
+    }, []);
 
     return { deals: enrichedDeals, hasMore };
   }

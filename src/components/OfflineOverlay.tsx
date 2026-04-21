@@ -1,5 +1,6 @@
 import { WifiOff, Wifi, X } from 'lucide-react';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 
 /**
@@ -13,6 +14,7 @@ import { useOnlineStatus } from '@/hooks/useOnlineStatus';
  * - Dismissible so power users can hide it if they already know.
  */
 export default function OfflineBanner() {
+  const { t } = useTranslation();
   const { isOnline, justCameBackOnline } = useOnlineStatus();
   const [dismissed, setDismissed] = useState(false);
 
@@ -28,7 +30,7 @@ export default function OfflineBanner() {
       <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[200] animate-in slide-in-from-top-4 fade-in duration-500">
         <div className="flex items-center gap-3 bg-status-success text-white px-5 py-3 rounded-2xl shadow-xl shadow-status-success/30 font-bold text-sm">
           <Wifi size={18} />
-          <span>Conexión restaurada ✓</span>
+          <span>{t('offline.restored')}</span>
         </div>
       </div>
     );
@@ -48,10 +50,10 @@ export default function OfflineBanner() {
             {/* Message */}
             <div className="flex-1 min-w-0">
               <p className="text-sm font-bold text-white leading-tight">
-                Sin conexión a internet
+                {t('offline.bannerTitle')}
               </p>
               <p className="text-[11px] text-white/60 font-medium mt-0.5">
-                Tus cupones guardados siguen disponibles
+                {t('offline.bannerDesc')}
               </p>
             </div>
 
@@ -68,16 +70,16 @@ export default function OfflineBanner() {
           {/* Capability chips */}
           <div className="max-w-lg mx-auto px-4 pb-3 flex gap-2 overflow-x-auto no-scrollbar">
             <div className="flex-shrink-0 flex items-center gap-1.5 bg-status-success/15 border border-status-success/20 text-status-success px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wide">
-              <span>✓</span> Ver cupones
+              <span>✓</span> {t('offline.viewCoupons')}
             </div>
             <div className="flex-shrink-0 flex items-center gap-1.5 bg-status-success/15 border border-status-success/20 text-status-success px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wide">
-              <span>✓</span> Mostrar QR
+              <span>✓</span> {t('offline.showQr')}
             </div>
             <div className="flex-shrink-0 flex items-center gap-1.5 bg-white/5 border border-white/10 text-white/30 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wide">
-              <span>✗</span> Reclamar
+              <span>✗</span> {t('offline.claim')}
             </div>
             <div className="flex-shrink-0 flex items-center gap-1.5 bg-white/5 border border-white/10 text-white/30 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wide">
-              <span>✗</span> Escanear
+              <span>✗</span> {t('offline.scan')}
             </div>
           </div>
         </div>
@@ -94,13 +96,14 @@ export default function OfflineBanner() {
  * Shows only when the user is offline so it never appears in normal usage.
  */
 export function OfflineActionBadge() {
+  const { t } = useTranslation();
   const { isOnline } = useOnlineStatus();
   if (isOnline) return null;
 
   return (
     <span className="inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-wider text-status-error bg-status-error-bg px-2 py-0.5 rounded-full border border-status-error/20">
       <WifiOff size={9} />
-      Sin red
+      {t('offline.badge')}
     </span>
   );
 }

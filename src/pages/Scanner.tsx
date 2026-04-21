@@ -116,9 +116,9 @@ export default function Scanner() {
             <div className="w-16 h-16 bg-status-error/10 rounded-2xl flex items-center justify-center text-status-error mb-4">
               <WifiOff size={32} />
             </div>
-            <h3 className="text-white font-black text-lg mb-2 uppercase tracking-tight">Requiere Conexión</h3>
+            <h3 className="text-white font-black text-lg mb-2 uppercase tracking-tight">{t('scanner.offlineScannerTitle')}</h3>
             <p className="text-white/50 text-xs font-bold leading-relaxed px-4">
-              No puedes canjear cupones sin conexión a internet. Vuelve a intentarlo cuando recuperes la señal.
+              {t('scanner.offlineScannerDesc')}
             </p>
           </div>
         ) : (

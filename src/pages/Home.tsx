@@ -443,7 +443,7 @@ export default function Home() {
           actionButtons={[
             {
               id: 'claim-btn',
-              text: userCoupons[selectedDeal.deal_id] ? t('home.viewCoupon') : (isOnline ? t('home.claimDeal') : 'Requiere conexión'),
+              text: userCoupons[selectedDeal.deal_id] ? t('home.viewCoupon') : (isOnline ? t('home.claimDeal') : t('offline.requiresConnection')),
               onClick: () => claimDeal(selectedDeal),
               disabled: !isOnline || claimingId === selectedDeal.deal_id || userCoupons[selectedDeal.deal_id]?.status === 'redeemed',
               loading: claimingId === selectedDeal.deal_id,

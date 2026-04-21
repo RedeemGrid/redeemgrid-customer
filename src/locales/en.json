@@ -64,7 +64,9 @@
     "codeDetected": "Code detected:",
     "processingCoupon": "Processing\nCoupon...",
     "offerRedeemedSuccess": "Offer successfully redeemed!",
-    "errorProcessingScan": "Error processing scan"
+    "errorProcessingScan": "Error processing scan",
+    "offlineScannerTitle": "Requires Connection",
+    "offlineScannerDesc": "You cannot redeem coupons without an internet connection. Try again when you regain signal."
   },
   "settings": {
     "title": "Settings",
@@ -122,7 +124,15 @@
     "title": "No Connection",
     "desc": "It looks like you've lost signal. Don't worry, you can still see your saved coupons, but some features require internet.",
     "retry": "Retry Connection",
-    "badge": "Offline Mode Active"
+    "badge": "Offline Mode Active",
+    "bannerTitle": "No internet connection",
+    "bannerDesc": "Your saved coupons are still available",
+    "restored": "Connection restored ✓",
+    "requiresConnection": "Requires Connection",
+    "viewCoupons": "View coupons",
+    "showQr": "Show QR",
+    "claim": "Claim",
+    "scan": "Scan"
   },
   "update": {
     "readyTitle": "App Ready to Use!",

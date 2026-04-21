@@ -64,7 +64,9 @@
     "codeDetected": "Código detectado:",
     "processingCoupon": "Procesando\nCupón...",
     "offerRedeemedSuccess": "¡Oferta canjeada exitosamente!",
-    "errorProcessingScan": "Error al procesar escaneo"
+    "errorProcessingScan": "Error al procesar escaneo",
+    "offlineScannerTitle": "Requiere Conexión",
+    "offlineScannerDesc": "No puedes canjear cupones sin conexión a internet. Vuelve a intentarlo cuando recuperes la señal."
   },
   "settings": {
     "title": "Ajustes",
@@ -122,7 +124,15 @@
     "title": "Sin Conexión",
     "desc": "Parece que has perdido la señal. No te preocupes, aún puedes ver tus cupones guardados, pero algunas funciones requieren internet.",
     "retry": "Reintentar Conexión",
-    "badge": "Modo Offline Activo"
+    "badge": "Modo Offline Activo",
+    "bannerTitle": "Sin conexión a internet",
+    "bannerDesc": "Tus cupones guardados siguen disponibles",
+    "restored": "Conexión restaurada ✓",
+    "requiresConnection": "Requiere Conexión",
+    "viewCoupons": "Ver cupones",
+    "showQr": "Mostrar QR",
+    "claim": "Reclamar",
+    "scan": "Escanear"
   },
   "update": {
     "readyTitle": "¡App Lista para Usar!",
