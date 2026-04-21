@@ -83,4 +83,12 @@
   .glass-light {
     @apply bg-white/80 backdrop-blur-md border border-white/40 shadow-sm;
   }
+
+  /* Scanner Video Fixes */
+  #reader video {
+    object-fit: cover !important;
+    width: 100% !important;
+    height: 100% !important;
+    border-radius: 48px;
+  }
 }

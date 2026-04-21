@@ -1,23 +1,33 @@
-// @ts-nocheck
 import { useEffect, useState, useRef } from 'react';
 import { Html5Qrcode } from 'html5-qrcode';
-import { ChevronLeft, Zap, Loader2 } from 'lucide-react';
+import { ChevronLeft, Zap, Loader2, WifiOff } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
-import { WifiOff } from 'lucide-react';
+import { useCameraPermission } from '@/hooks/useCameraPermission';
+import PermissionGuide from '@/components/PermissionGuide';
+import { ScannerSkeleton } from '@/components/Skeleton';
 
 export default function Scanner() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { user } = useAuth();
   const { isOnline } = useOnlineStatus();
+  const cameraStatus = useCameraPermission();
   const [scanResult, setScanResult] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isDenied, setIsDenied] = useState(false);
+  const [isInitializing, setIsInitializing] = useState(true);
   const scannerRef = useRef<Html5Qrcode | null>(null);
-  
+
+  useEffect(() => {
+    // Show skeleton briefly while camera warm up
+    const timer = setTimeout(() => setIsInitializing(false), 800);
+    return () => clearTimeout(timer);
+  }, []);
+
   // Use a ref to persist isProcessing inside the html5QrCode callback
   const processingRef = useRef(false);
   processingRef.current = isProcessing;
@@ -25,7 +35,7 @@ export default function Scanner() {
   const processScan = async (scannedData: string) => {
     setIsProcessing(true);
     try {
-      const { data, error } = await supabase.rpc('user_redeem_offer', {
+      const { error } = await supabase.rpc('user_redeem_offer', {
         p_user_id: user?.id,
         p_deal_id: scannedData
       });
@@ -48,45 +58,92 @@ export default function Scanner() {
   };
 
   useEffect(() => {
-    if (!isOnline) return; // Don't even start scanner if offline
+    if (!isOnline) return;
 
-    // Initialize the headless scanner to avoid English UI injection
-    const html5QrCode = new Html5Qrcode("reader");
+    let isMounted = true;
+    const startScanner = async () => {
+      // Small delay to ensure the DOM is settled
+      await new Promise(resolve => setTimeout(resolve, 500));
+      if (!isMounted) return;
 
-    html5QrCode.start(
-      { facingMode: "environment" },
-      {
-        fps: 10,
-        qrbox: { width: 250, height: 250 },
-        aspectRatio: 1.0,
-      },
-      (result) => {
-        if (processingRef.current) return;
-        setScanResult(result);
-        
-        // Stop scanning after success
-        if ((html5QrCode as any).isScanning) {
-          html5QrCode.stop().catch(console.error);
+      try {
+        const html5QrCode = new Html5Qrcode("reader");
+        scannerRef.current = html5QrCode;
+
+        await html5QrCode.start(
+          { facingMode: "environment" },
+          {
+            fps: 10,
+            qrbox: { width: 250, height: 250 },
+            aspectRatio: 1.0,
+          },
+          (result) => {
+            if (processingRef.current) return;
+            setScanResult(result);
+            if (html5QrCode.isScanning) {
+              html5QrCode.stop().catch(console.error);
+            }
+            processScan(result);
+          },
+          () => { /* ignore noise */ }
+        );
+      } catch (err: any) {
+        console.error("Error starting camera", err);
+        if (err?.name === 'NotAllowedError' || err?.toString().includes('NotAllowedError')) {
+          setIsDenied(true);
         }
-
-        processScan(result);
-      },
-      (_error) => {
-        // Silently ignore noise
       }
-    ).catch(err => {
-      console.error("Error starting camera", err);
-    });
+    };
 
-    scannerRef.current = html5QrCode;
+    startScanner();
 
     return () => {
-      // Cleanup the scanner on unmount
-      if (scannerRef.current && (scannerRef.current as any).isScanning) {
-        scannerRef.current.stop().catch(err => console.error("Error clearing scanner", err));
+      isMounted = false;
+      if (scannerRef.current && scannerRef.current.isScanning) {
+        scannerRef.current.stop()
+          .then(() => {
+            if (scannerRef.current) {
+              scannerRef.current.clear();
+            }
+          })
+          .catch(err => console.error("Error clearing scanner", err));
       }
     };
   }, [isOnline]); // Re-run if connection status changes
+
+  // Update local isDenied state if the hook detects it
+  useEffect(() => {
+    if (cameraStatus === 'denied') {
+      setIsDenied(true);
+    }
+  }, [cameraStatus]);
+
+  if (isInitializing) {
+    return <ScannerSkeleton />;
+  }
+
+  if (isDenied) {
+    return (
+      <div className="min-h-screen flex flex-col p-6 animate-in fade-in duration-500">
+        <header className="flex items-center gap-4 mb-8">
+          <button onClick={() => navigate(-1)} className="p-3 bg-white text-text-muted hover:text-text-main rounded-2xl border border-black/5 shadow-sm transition-all focus:ring-2 focus:ring-brand-primary/10">
+            <ChevronLeft size={24} />
+          </button>
+          <h2 className="text-xl font-black italic uppercase tracking-tighter text-text-main">{t('scanner.title')}</h2>
+        </header>
+
+        <div className="flex-1 flex flex-col justify-center max-w-sm mx-auto w-full">
+          <PermissionGuide 
+            type="camera" 
+            onAlreadyFixed={() => {
+              setIsDenied(false);
+              window.location.reload();
+            }} 
+          />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-[80vh] flex flex-col items-center justify-center p-4">

@@ -1,10 +1,10 @@
-// @ts-nocheck
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Mail, Shield, LogOut, CheckCircle, Clock, ChevronRight, Loader2, Calendar, Users, X, Pencil, Settings, Ticket } from 'lucide-react';
+import { Mail, Shield, LogOut, CheckCircle, Clock, ChevronRight, Calendar, Users, X, Pencil, Settings, Ticket } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { ProfileSkeleton } from '@/components/Skeleton';
 
 export default function Profile() {
   const { t } = useTranslation();
@@ -53,8 +53,10 @@ export default function Profile() {
         if (error) throw error;
 
         const now = new Date();
-        const counts = data.reduce((acc, curr) => {
-          const isExpired = curr.deals?.end_date && new Date(curr.deals.end_date) < now;
+        const counts = data.reduce((acc, curr: any) => {
+          // Handle Supabase join result which might be an object or an array depending on typing
+          const deal = Array.isArray(curr.deals) ? curr.deals[0] : curr.deals;
+          const isExpired = deal?.end_date && new Date(deal.end_date) < now;
           
           if (curr.status === 'redeemed') {
             acc.redeemed += 1;
@@ -86,7 +88,7 @@ export default function Profile() {
     style: 'avataaars'
   }));
 
-  const getAvatarUrl = (preset = {}) => {
+  const getAvatarUrl = (preset: any = {}) => {
     try {
       const style = preset.style || 'avataaars';
       const seed = preset.seed || profile?.full_name || user?.email || 'user';
@@ -138,12 +140,7 @@ export default function Profile() {
   };
 
   if (loading) {
-    return (
-      <div className="flex flex-col items-center justify-center py-20 animate-pulse">
-        <Loader2 size={48} className="text-text-muted/20 mb-4 animate-spin" />
-        <p className="text-text-muted font-black uppercase tracking-widest text-[10px]">{t('profile.preparingProfile')}</p>
-      </div>
-    );
+    return <ProfileSkeleton />;
   }
 
   if (!profile) {
@@ -331,12 +328,12 @@ export default function Profile() {
                           <button
                             key={preset.id}
                             type="button"
-                            onClick={() => setEditForm({...editForm, avatar_url: url})}
+                            onClick={() => setEditForm({...editForm, avatar_url: url || ''})}
                             className={`relative aspect-square rounded-[24px] overflow-hidden border-2 transition-all p-1.5 ${
                               isSelected ? 'border-brand-primary bg-brand-primary/5 scale-110' : 'border-black/5 bg-white hover:border-black/10'
                             }`}
                           >
-                            <img src={url} alt={preset.label} className="w-full h-full object-contain" />
+                            <img src={url || ''} alt={preset.label} className="w-full h-full object-contain" />
                             {isSelected && (
                                <div className="absolute inset-0 bg-brand-primary/5 flex items-center justify-center">
                                  <div className="bg-white rounded-full p-1 shadow-lg">

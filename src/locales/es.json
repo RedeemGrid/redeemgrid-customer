@@ -48,7 +48,10 @@
     "viewDetails": "Ver Detalles",
     "expires": "Vence:",
     "viewCoupon": "Ver Cupón",
-    "showingLastKnown": "Mostrando ofertas de tu última ubicación..."
+    "showingLastKnown": "Mostrando ofertas de tu última ubicación...",
+    "errorLocationTitle": "No pudimos obtener tu ubicación",
+    "errorLocationDesc": "Hubo un problema al obtener tu posición. Esto puede ocurrir por mala conexión o fallos en el GPS.",
+    "errorFetchDeals": "No pudimos obtener las ofertas de tu zona."
   },
   "login": {
     "welcome": "Bienvenido a",
@@ -221,6 +224,49 @@
     "emptyTitle": "¡Total Tranquilidad!",
     "emptyDesc": "Estás al día. No hay nuevas alertas ni notificaciones por el momento.",
     "backToExplore": "Volver a Explorar"
+  },
+  "permissions": {
+    "camera": {
+      "title": "Acceso a Cámara Bloqueado",
+      "desc": "Necesitamos tu cámara para escanear códigos QR y validar ofertas."
+    },
+    "location": {
+      "title": "Acceso a Ubicación Bloqueado",
+      "desc": "Para mostrarte las ofertas más cerca de ti, necesitamos saber tu ubicación."
+    },
+    "notifications": {
+      "title": "Notificaciones Desactivadas",
+      "desc": "Recibe alertas cuando tus cupones estén por vencer o haya nuevas ofertas."
+    },
+    "guide": {
+      "stepStandaloneIntro": "Al estar instalada como App, debes cambiar los permisos en los ajustes del sistema.",
+      "stepBrowserIntro": "Sigue estos pasos en tu navegador:",
+      "stepBrowserLock": "Toca el icono del candado 🔒 o los ajustes (AA) en la barra superior.",
+      "stepBrowserSettings": "Busca 'Ajustes del sitio' y activa el permiso de {{type}}.",
+      "stepAndroidApp": "Mantén presionado el icono de la App > Info (i) > Permisos",
+      "stepIosApp": "Ve a Ajustes > Busca 'Nabbu' > Activa los permisos",
+      "stepCopyLink": "Si no encuentras los ajustes, abre Chrome o Safari y pega este enlace:",
+      "copyAction": "Copiar Enlace",
+      "copied": "¡Copiado!",
+      "alreadyFixed": "Ya lo arreglé",
+      "statusGranted": "Concedido",
+      "statusDenied": "Denegado",
+      "statusPrompt": "Pendiente",
+      "manage": "Gestionar Permisos",
+      "openInBrowser": "Gestionar en el Navegador"
+    },
+    "bridge": {
+      "title": "Gestor de Permisos",
+      "desc": "Configura los accesos necesarios para usar todas las funciones de Nabbu.",
+      "statusHeader": "Estado de Permisos",
+      "grantBtn": "Activar ahora",
+      "cameraExp": "Al pulsar el botón, tu navegador te pedirá permiso para usar la cámara. Esto es necesario para escanear los códigos QR de los comercios.",
+      "locationExp": "Necesitamos saber dónde estás para mostrarte las ofertas más cercanas a ti en el mapa.",
+      "notifExp": "Recibe avisos cuando tus cupones estén por vencer o haya nuevas ofertas flash cerca de ti.",
+      "returnTitle": "¡Todo Listo!",
+      "returnDesc": "Ya puedes cerrar esta pestaña y volver a la App de Nabbu.",
+      "browserOnly": "Estás en el modo de gestión segura del navegador."
+    }
   },
   "db_categories": {
     "Food": "Comida",

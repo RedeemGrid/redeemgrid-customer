@@ -12,7 +12,9 @@ import About from '@/pages/About';
 import Terms from '@/pages/Terms';
 import Support from '@/pages/Support';
 import Scanner from '@/pages/Scanner';
+import PermissionBridge from '@/pages/PermissionBridge';
 import Layout from '@/components/Layout';
+import { MainAppSkeleton } from '@/components/Skeleton';
 import type { ReactNode } from 'react';
 
 interface ProtectedRouteProps {
@@ -23,11 +25,7 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const { user, loading } = useAuth();
   
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-bg-page">
-        <p className="text-text-muted font-bold uppercase tracking-widest text-[10px]">Loading Experience...</p>
-      </div>
-    );
+    return <MainAppSkeleton />;
   }
   
   if (!user) {
@@ -63,6 +61,7 @@ function App() {
               <Route path="support" element={<Support />} />
               <Route path="scanner" element={<Scanner />} />
             </Route>
+            <Route path="/permissions-bridge" element={<PermissionBridge />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </BrowserRouter>

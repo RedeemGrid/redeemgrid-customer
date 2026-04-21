@@ -48,7 +48,10 @@
     "viewDetails": "View Details",
     "expires": "Expires:",
     "viewCoupon": "View Coupon",
-    "showingLastKnown": "Showing deals from your last known location..."
+    "showingLastKnown": "Showing deals from your last known location...",
+    "errorLocationTitle": "Couldn't Get Location",
+    "errorLocationDesc": "There was a problem getting your position. This can happen on slow connections or GPS timeouts.",
+    "errorFetchDeals": "Could not fetch deals in your area."
   },
   "login": {
     "welcome": "Welcome to",
@@ -221,6 +224,49 @@
     "emptyTitle": "Total Peace of Mind!",
     "emptyDesc": "You're all caught up. No new alerts or notifications at the moment.",
     "backToExplore": "Back to Explore"
+  },
+  "permissions": {
+    "camera": {
+      "title": "Camera Access Blocked",
+      "desc": "We need your camera to scan QR codes and validate deals."
+    },
+    "location": {
+      "title": "Location Access Blocked",
+      "desc": "To show you the closest deals, we need to know your location."
+    },
+    "notifications": {
+      "title": "Notifications Disabled",
+      "desc": "Get alerts when your coupons are about to expire or there are new deals."
+    },
+    "guide": {
+      "stepStandaloneIntro": "Since the app is installed, you must change permissions in system settings.",
+      "stepBrowserIntro": "Follow these steps in your browser:",
+      "stepBrowserLock": "Tap the Lock icon 🔒 or Settings (AA) in the address bar.",
+      "stepBrowserSettings": "Find 'Site Settings' and enable {{type}} permission.",
+      "stepAndroidApp": "Long press the App icon > Info (i) > Permissions",
+      "stepIosApp": "Go to Settings > Find 'Nabbu' > Enable permissions",
+      "stepCopyLink": "If you can't find settings, open Chrome or Safari and paste this link:",
+      "copyAction": "Copy Link",
+      "copied": "Copied!",
+      "alreadyFixed": "I fixed it",
+      "statusGranted": "Granted",
+      "statusDenied": "Denied",
+      "statusPrompt": "Pending",
+      "manage": "Manage Permissions",
+      "openInBrowser": "Manage in Browser"
+    },
+    "bridge": {
+      "title": "Permissions Manager",
+      "desc": "Configure the necessary access to use all Nabbu features.",
+      "statusHeader": "Permission Status",
+      "grantBtn": "Enable Now",
+      "cameraExp": "When you click the button, your browser will ask for camera permission. This is only used to scan QR codes at stores.",
+      "locationExp": "We need to know your location to show you the closest deals and guide you to them on the map.",
+      "notifExp": "Get alerted before your coupons expire so you never miss out on your savings.",
+      "returnTitle": "All Done!",
+      "returnDesc": "You can now close this tab and return to the Nabbu App.",
+      "browserOnly": "You are in the browser's secure management mode."
+    }
   },
   "db_categories": {
     "Food": "Food",

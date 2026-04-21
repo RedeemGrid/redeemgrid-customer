@@ -1,13 +1,24 @@
 import { useNavigate } from 'react-router-dom';
-import { ChevronLeft, HelpCircle, Globe, Map, Ruler, MapPin } from 'lucide-react';
+import { ChevronLeft, HelpCircle, Globe, Map, Ruler, MapPin, ShieldCheck, XCircle, CheckCircle2, ChevronDown } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useState } from 'react';
 import { availableLanguages } from '../i18n';
 import { usePreferences } from '@/context/PreferencesContext';
+import { useCameraPermission } from '@/hooks/useCameraPermission';
+import { useGeolocation } from '@/hooks/useGeolocation';
+import { useNotificationPermission } from '@/hooks/useNotificationPermission';
+import PermissionGuide from '@/components/PermissionGuide';
 
 export default function Settings() {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
   const { searchRadius, setSearchRadius, distanceUnit, setDistanceUnit } = usePreferences();
+  
+  const cameraStatus = useCameraPermission();
+  const { permissionStatus: geoStatus } = useGeolocation();
+  const { status: notifStatus, request: requestNotif } = useNotificationPermission();
+
+  const [activeGuide, setActiveGuide] = useState<'camera' | 'location' | 'notifications' | null>(null);
 
   const handleLanguageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     i18n.changeLanguage(e.target.value);
@@ -164,7 +175,100 @@ export default function Settings() {
             <ChevronLeft size={20} className="rotate-180 text-text-muted/30" />
           </div>
         </button>
+
+        {/* Permissions Center */}
+        <div className="bg-white border border-black/5 p-8 rounded-[40px] shadow-sm group">
+          <div className="flex items-center gap-4 mb-8">
+            <div className="w-12 h-12 rounded-2xl bg-brand-primary/10 flex items-center justify-center text-brand-primary border border-brand-primary/20">
+              <ShieldCheck size={24} />
+            </div>
+            <div>
+              <p className="font-black text-sm uppercase leading-tight text-text-main">{t('permissions.guide.manage')}</p>
+              <p className="text-text-muted text-[10px] font-bold uppercase tracking-widest mt-1">App Reliability</p>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            {/* Geolocation */}
+            <PermissionRow 
+              label={t('permissions.location.title')}
+              status={geoStatus === 'ready' || geoStatus === 'loading' ? 'granted' : geoStatus === 'denied' ? 'denied' : 'prompt'}
+              onFix={() => setActiveGuide('location')}
+              t={t}
+            />
+            {/* Camera */}
+            <PermissionRow 
+              label={t('permissions.camera.title')}
+              status={cameraStatus as any}
+              onFix={() => setActiveGuide('camera')}
+              t={t}
+            />
+            {/* Notifications */}
+            <PermissionRow 
+              label={t('permissions.notifications.title')}
+              status={notifStatus === 'granted' ? 'granted' : notifStatus === 'denied' ? 'denied' : 'prompt'}
+              onFix={() => notifStatus === 'default' ? requestNotif() : setActiveGuide('notifications')}
+              t={t}
+            />
+          </div>
+        </div>
       </div>
+
+      {/* Permission Guide Overlay */}
+      {activeGuide && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 animate-in fade-in duration-300">
+          <div className="absolute inset-0 bg-neutral-900/80 backdrop-blur-md" onClick={() => setActiveGuide(null)}></div>
+          <div className="relative w-full max-w-lg">
+            <PermissionGuide 
+              type={activeGuide} 
+              onAlreadyFixed={() => {
+                setActiveGuide(null);
+                window.location.reload();
+              }} 
+            />
+            <button 
+              onClick={() => setActiveGuide(null)}
+              className="absolute -top-12 right-0 text-white hover:text-brand-primary font-black uppercase text-[10px] tracking-widest flex items-center gap-2"
+            >
+              {t('profile.cancel')} <ChevronDown size={16} />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+
+function PermissionRow({ label, status, onFix, t }: { label: string, status: 'granted' | 'denied' | 'prompt' | 'unknown', onFix: () => void, t: any }) {
+  const isGranted = status === 'granted';
+  const isDenied = status === 'denied';
+
+  return (
+    <div className="flex items-center justify-between p-4 bg-neutral-50 rounded-3xl border border-black/5 hover:border-black/10 transition-colors">
+      <div className="flex items-center gap-3">
+        {isGranted ? (
+          <CheckCircle2 size={16} className="text-brand-secondary" />
+        ) : isDenied ? (
+          <XCircle size={16} className="text-status-error" />
+        ) : (
+          <HelpCircle size={16} className="text-text-muted/40" />
+        )}
+        <span className="text-xs font-bold text-text-muted">{label}</span>
+      </div>
+      
+      <button 
+        onClick={onFix}
+        className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+          isGranted 
+            ? 'text-brand-secondary/40 pointer-events-none' 
+            : isDenied 
+              ? 'bg-status-error text-white shadow-lg shadow-status-error/10' 
+              : 'bg-white text-brand-primary border border-black/5 shadow-sm'
+        }`}
+      >
+        {isGranted ? t('permissions.guide.statusGranted') : isDenied ? t('permissions.guide.manage') : t('permissions.guide.statusPrompt')}
+      </button>
+    </div>
+  );
+}
+

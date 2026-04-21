@@ -5,6 +5,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { MapPin, Tag, RefreshCcw, AlertTriangle, Search, X, Navigation, Clock } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import PermissionGuide from '@/components/PermissionGuide';
 import OfferDetailModal from '@/components/OfferDetailModal';
 import SafeImage from '@/components/SafeImage';
 import { DealCardSkeleton } from '@/components/Skeleton';
@@ -177,7 +178,7 @@ export default function Home() {
 
   // ── React Query: Nearby Deals ────────────────────────────────────────────────
   const { isLoading, isError, refetch } = useQuery({
-    queryKey: ['nearby-deals', coords?.latitude, coords?.longitude],
+    queryKey: ['nearby-deals', coords?.latitude, coords?.longitude, radiusInMeters],
     queryFn: async () => {
       if (!coords) return { deals: allDeals, hasMore: false };
 
@@ -293,53 +294,14 @@ export default function Home() {
     const matchSearch = !searchQuery ||
       d.deal_title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       d.branch_name.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchCat && matchSearch;
+    const matchDistance = d.distance <= radiusInMeters;
+    return matchCat && matchSearch && matchDistance;
   });
 
   // ── Geo Permission States ────────────────────────────────────────────────────
-  if (permissionStatus === 'idle' || permissionStatus === 'checking') {
-    return (
-      <div className="flex flex-col items-center justify-center py-20 animate-pulse">
-        <MapPin size={48} className="text-text-muted/20 mb-4" />
-        <p className="text-text-muted font-bold uppercase tracking-widest text-[10px]">{t('home.checkingAccess')}</p>
-      </div>
-    );
-  }
+  const showSkeletons = permissionStatus === 'idle' || permissionStatus === 'checking' || permissionStatus === 'loading';
 
-  if (permissionStatus === 'loading') {
-    return (
-      <div className="grid gap-6">
-        {allDeals.length > 0 ? (
-          <>
-            <div className="bg-brand-primary/5 border border-brand-primary/10 rounded-2xl px-5 py-4 mb-2 animate-in fade-in slide-in-from-top-2 flex items-center gap-4">
-              <div className="w-10 h-10 bg-brand-primary/10 rounded-xl flex items-center justify-center text-brand-primary">
-                <Clock size={20} className="animate-pulse" />
-              </div>
-              <div className="flex-1">
-                <p className="text-xs font-black uppercase tracking-widest text-brand-primary">
-                  {t('home.showingLastKnown')}
-                </p>
-                <p className="text-[10px] font-bold text-brand-primary/60 uppercase tracking-tighter mt-0.5">
-                  Localizando tu posición actual...
-                </p>
-              </div>
-            </div>
-            {filteredDeals.map((deal) => (
-              <DealCard 
-                key={`${deal.deal_id}-${deal.branch_name}`} 
-                deal={deal} 
-                isClaimed={!!userCoupons[deal.deal_id]}
-                onClick={() => handleSelectDeal(deal)}
-                t={t}
-              />
-            ))}
-          </>
-        ) : (
-          Array.from({ length: 4 }).map((_, i) => <DealCardSkeleton key={i} />)
-        )}
-      </div>
-    );
-  }
+
 
   if (permissionStatus === 'prompt') {
     return (
@@ -366,20 +328,8 @@ export default function Home() {
 
   if (permissionStatus === 'denied') {
     return (
-      <div className="flex flex-col items-center justify-center py-10 px-2">
-        <div className="w-full max-w-sm bg-white rounded-[40px] border border-black/5 shadow-xl overflow-hidden p-10 text-center">
-          <div className="w-20 h-20 bg-status-error-bg rounded-full flex items-center justify-center mx-auto mb-6">
-            <AlertTriangle size={36} className="text-status-error" />
-          </div>
-          <h3 className="font-black text-text-main text-xl mb-3">{t('home.accessDeniedTitle')}</h3>
-          <p className="text-text-muted text-sm leading-relaxed mb-8">{t('home.accessDeniedDesc')}</p>
-          <button
-            onClick={() => window.location.reload()}
-            className="w-full bg-status-error text-white font-black py-5 rounded-full shadow-lg shadow-status-error/20 hover:opacity-90 transition-all active:scale-95 text-sm uppercase tracking-widest"
-          >
-            {t('home.retryCheckBtn')}
-          </button>
-        </div>
+      <div className="flex flex-col items-center justify-center py-10 px-6 max-w-lg mx-auto animate-in fade-in duration-500">
+        <PermissionGuide type="location" onAlreadyFixed={() => window.location.reload()} />
       </div>
     );
   }
@@ -391,15 +341,15 @@ export default function Home() {
           <div className="w-20 h-20 bg-status-error-bg rounded-[32px] flex items-center justify-center mx-auto mb-6">
             <RefreshCcw size={36} className="text-status-error" />
           </div>
-          <h3 className="font-black text-text-main text-xl mb-3">Couldn't Get Location</h3>
+          <h3 className="font-black text-text-main text-xl mb-3">{t('home.errorLocationTitle')}</h3>
           <p className="text-text-muted text-sm leading-relaxed mb-8">
-            There was a problem getting your location. This can happen on slow connections or GPS timeouts. Please try again.
+            {t('home.errorLocationDesc')}
           </p>
           <button
             onClick={() => window.location.reload()}
             className="w-full bg-gradient-to-r from-brand-primary to-brand-secondary text-white font-black py-5 rounded-[28px] hover:opacity-90 transition-all active:scale-95 text-sm uppercase tracking-widest shadow-xl shadow-brand-primary/20"
           >
-            Try Again
+            {t('home.retryCheckBtn')}
           </button>
         </div>
       </div>
@@ -426,7 +376,24 @@ export default function Home() {
       {isError && (
         <div className="bg-status-error-bg border border-status-error/20 p-4 rounded-2xl text-status-error text-sm flex items-center gap-3">
           <AlertTriangle size={18} />
-          Could not fetch deals in your area.
+          {t('home.errorFetchDeals')}
+        </div>
+      )}
+
+      {/* Loading Overlay for Cached Data */}
+      {showSkeletons && allDeals.length > 0 && (
+        <div className="bg-brand-primary/5 border border-brand-primary/10 rounded-2xl px-5 py-4 mb-6 animate-in fade-in slide-in-from-top-2 flex items-center gap-4">
+          <div className="w-10 h-10 bg-brand-primary/10 rounded-xl flex items-center justify-center text-brand-primary">
+            <Clock size={20} className="animate-pulse" />
+          </div>
+          <div className="flex-1">
+            <p className="text-xs font-black uppercase tracking-widest text-brand-primary">
+              {t('home.showingLastKnown')}
+            </p>
+            <p className="text-[10px] font-bold text-brand-primary/60 uppercase tracking-tighter mt-0.5">
+              {t('home.retrievingLocation')}
+            </p>
+          </div>
         </div>
       )}
 
@@ -470,7 +437,9 @@ export default function Home() {
 
       {/* Deal Grid */}
       <div className="grid gap-6">
-        {isLoading ? (
+        {showSkeletons && allDeals.length === 0 ? (
+          Array.from({ length: 4 }).map((_, i) => <DealCardSkeleton key={i} />)
+        ) : isLoading && allDeals.length === 0 ? (
           Array.from({ length: 4 }).map((_, i) => <DealCardSkeleton key={i} />)
         ) : filteredDeals.length === 0 ? (
           <div className="bg-white border-2 border-dashed border-black/5 rounded-[40px] py-20 text-center px-10 shadow-sm">
