@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { Html5Qrcode } from 'html5-qrcode';
-import { ChevronLeft, Zap, Loader2, WifiOff } from 'lucide-react';
+import { ChevronLeft, Zap, Loader2, WifiOff, QrCode } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '../lib/supabase';
@@ -13,7 +13,7 @@ import { ScannerSkeleton } from '@/components/Skeleton';
 export default function Scanner() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, isGuest } = useAuth();
   const { isOnline } = useOnlineStatus();
   const cameraStatus = useCameraPermission();
   const [scanResult, setScanResult] = useState<string | null>(null);
@@ -58,12 +58,12 @@ export default function Scanner() {
   };
 
   useEffect(() => {
-    if (!isOnline) return;
+    if (!isOnline || !user || isInitializing) return;
 
     let isMounted = true;
     const startScanner = async () => {
-      // Small delay to ensure the DOM is settled
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // Wait for DOM to be ready
+      await new Promise(resolve => setTimeout(resolve, 100));
       if (!isMounted) return;
 
       try {
@@ -109,7 +109,7 @@ export default function Scanner() {
           .catch(err => console.error("Error clearing scanner", err));
       }
     };
-  }, [isOnline]); // Re-run if connection status changes
+  }, [isOnline, user, isInitializing]); // Re-run if connection, user or init state changes
 
   // Update local isDenied state if the hook detects it
   useEffect(() => {
@@ -140,6 +140,34 @@ export default function Scanner() {
               window.location.reload();
             }} 
           />
+        </div>
+      </div>
+    );
+  }
+
+  if (!user && isGuest) {
+    return (
+      <div className="min-h-screen flex flex-col p-6 animate-in fade-in duration-500">
+        <header className="flex items-center gap-4 mb-8">
+          <button onClick={() => navigate(-1)} className="p-3 bg-white text-text-muted hover:text-text-main rounded-2xl border border-black/5 shadow-sm transition-all">
+            <ChevronLeft size={24} />
+          </button>
+          <h2 className="text-xl font-black italic uppercase tracking-tighter text-text-main">{t('scanner.title')}</h2>
+        </header>
+        <div className="flex-1 flex flex-col items-center justify-center text-center px-4">
+          <div className="w-24 h-24 bg-brand-primary/5 rounded-[32px] flex items-center justify-center mb-8 border border-brand-primary/10">
+            <QrCode size={48} className="text-brand-primary opacity-40" />
+          </div>
+          <h3 className="text-2xl font-black text-text-main mb-3 tracking-tight">{t('scanner.title')}</h3>
+          <p className="text-text-muted text-sm leading-relaxed mb-10 max-w-xs mx-auto">
+            {t('home.signInToClaim')}
+          </p>
+          <button
+            onClick={() => navigate('/login')}
+            className="w-full max-w-xs bg-brand-secondary text-white font-black py-5 rounded-full shadow-lg shadow-brand-secondary/20 hover:bg-brand-primary transition-all text-sm uppercase tracking-widest"
+          >
+            {t('common.signIn')}
+          </button>
         </div>
       </div>
     );

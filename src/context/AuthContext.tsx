@@ -12,6 +12,9 @@ interface AuthContextType {
   loading: boolean;
   loginWithGoogle: () => Promise<any>;
   logout: () => Promise<any>;
+  isGuest: boolean;
+  setGuestMode: (val: boolean) => void;
+  updateProfileSilent: (updates: Partial<Profile>) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({} as AuthContextType);
@@ -24,6 +27,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [isGuest, setIsGuest] = useState<boolean>(() => {
+    return localStorage.getItem('rg_guest_mode') === 'true';
+  });
 
   useEffect(() => {
     // Get initial session
@@ -31,6 +37,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       setUser(session?.user ?? null);
       if (session?.user) {
         fetchProfile(session.user.id);
+        setIsGuest(false);
+        localStorage.removeItem('rg_guest_mode');
       } else {
         setLoading(false);
       }
@@ -41,6 +49,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       setUser(session?.user ?? null);
       if (session?.user) {
         fetchProfile(session.user.id);
+        setIsGuest(false);
+        localStorage.removeItem('rg_guest_mode');
       } else {
         setProfile(null);
         setLoading(false);
@@ -90,12 +100,40 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     return supabase.auth.signOut();
   };
 
+  const setGuestMode = (val: boolean) => {
+    setIsGuest(val);
+    if (val) {
+      localStorage.setItem('rg_guest_mode', 'true');
+    } else {
+      localStorage.removeItem('rg_guest_mode');
+    }
+  };
+
+  const updateProfileSilent = async (updates: Partial<Profile>) => {
+    if (!user) return;
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update(updates)
+        .eq('id', user.id);
+      
+      if (!error) {
+        setProfile(prev => prev ? { ...prev, ...updates } : null);
+      }
+    } catch (err) {
+      console.error('Silent profile update failed:', err);
+    }
+  };
+
   const value: AuthContextType = {
     user,
     profile,
     loading,
     loginWithGoogle,
     logout,
+    isGuest,
+    setGuestMode,
+    updateProfileSilent,
   };
 
   return (

@@ -13,7 +13,7 @@ import type { Coupon, Branch } from '@/types/models';
 
 export default function MyCoupons() {
   const { t } = useTranslation();
-  const { user } = useAuth();
+  const { user, isGuest } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -98,6 +98,26 @@ export default function MyCoupons() {
     if (days > 0) return `${days} ${t('coupons.daysLeft')}`;
     return `${hours} ${t('coupons.hoursLeft')}`;
   };
+
+  if (!user && isGuest) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 px-8 text-center animate-in fade-in duration-500">
+        <div className="w-24 h-24 bg-brand-primary/5 rounded-[32px] flex items-center justify-center mb-8 border border-brand-primary/10">
+          <Ticket size={48} className="text-brand-primary opacity-40" />
+        </div>
+        <h2 className="text-2xl font-black text-text-main mb-3 tracking-tight">{t('coupons.title')}</h2>
+        <p className="text-text-muted text-sm leading-relaxed mb-10 max-w-xs mx-auto">
+          {t('home.signInToClaim')}
+        </p>
+        <button
+          onClick={() => navigate('/login')}
+          className="w-full max-w-xs bg-brand-secondary text-white font-black py-5 rounded-full shadow-lg shadow-brand-secondary/20 hover:bg-brand-primary transition-all text-sm uppercase tracking-widest"
+        >
+          {t('common.signIn')}
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8 pb-24">

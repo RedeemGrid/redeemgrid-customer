@@ -3,7 +3,8 @@
   "common": {
     "readMore": "Ver Más",
     "showLess": "Mostrar Menos",
-    "back": "Volver"
+    "back": "Volver",
+    "signIn": "Iniciar Sesión"
   },
   "nav": {
     "explore": "Explorar",
@@ -51,12 +52,14 @@
     "showingLastKnown": "Mostrando ofertas de tu última ubicación...",
     "errorLocationTitle": "No pudimos obtener tu ubicación",
     "errorLocationDesc": "Hubo un problema al obtener tu posición. Esto puede ocurrir por mala conexión o fallos en el GPS.",
-    "errorFetchDeals": "No pudimos obtener las ofertas de tu zona."
+    "errorFetchDeals": "No pudimos obtener las ofertas de tu zona.",
+    "signInToClaim": "Inicia sesión para reclamar este cupón"
   },
   "login": {
     "welcome": "Bienvenido a",
     "subtitle": "Tu radar de ofertas locales",
     "signInGoogle": "Continuar con Google",
+    "continueAsGuest": "Explorar como invitado",
     "termsAgreed": "Al continuar, aceptas nuestros",
     "termsLink": "Términos de Uso y Política de Privacidad"
   },

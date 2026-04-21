@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useGeolocation } from '@/hooks/useGeolocation';
 import { useAuth } from '@/context/AuthContext';
@@ -148,6 +148,8 @@ export default function Home() {
   const queryClient = useQueryClient();
   const { isOnline } = useOnlineStatus();
   const { radiusInMeters } = usePreferences();
+  const { updateProfileSilent } = useAuth();
+  const analyticsSentRef = useRef(false);
 
   // ── State ────────────────────────────────────────────────────────────────────
   const [pageOffset, setPageOffset] = useState(0);
@@ -222,6 +224,24 @@ export default function Home() {
     },
     enabled: permissionStatus === 'ready' && !!coords,
   });
+
+  // ── Silent Analytics ─────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (user && coords && !analyticsSentRef.current) {
+      const isPWA = window.matchMedia('(display-mode: standalone)').matches;
+      const userAgent = navigator.userAgent;
+      const os = /iPhone|iPad|iPod/.test(userAgent) ? 'iOS' : /Android/.test(userAgent) ? 'Android' : 'Desktop';
+      
+      updateProfileSilent({
+        last_lat: coords.latitude,
+        last_lng: coords.longitude,
+        last_active_at: new Date().toISOString(),
+        device_os: os,
+        is_pwa_installed: isPWA
+      });
+      analyticsSentRef.current = true;
+    }
+  }, [user, coords, updateProfileSilent]);
 
   // ── React Query: User Coupons Map ────────────────────────────────────────────
   const { data: userCoupons = {} } = useQuery({
@@ -509,7 +529,11 @@ export default function Home() {
           actionButtons={[
             {
               id: 'claim-btn',
-              text: userCoupons[selectedDeal.deal_id] ? t('home.viewCoupon') : (isOnline ? t('home.claimDeal') : t('offline.requiresConnection')),
+              text: !user 
+                ? t('home.signInToClaim') 
+                : (userCoupons[selectedDeal.deal_id] 
+                    ? t('home.viewCoupon') 
+                    : (isOnline ? t('home.claimDeal') : t('offline.requiresConnection'))),
               onClick: () => claimDeal(selectedDeal),
               disabled: !isOnline || claimingId === selectedDeal.deal_id || userCoupons[selectedDeal.deal_id]?.status === 'redeemed',
               loading: claimingId === selectedDeal.deal_id,

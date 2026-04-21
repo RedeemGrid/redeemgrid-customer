@@ -14,7 +14,7 @@ import ReloadPrompt from '@/components/ReloadPrompt';
 
 export default function Layout() {
   const { t } = useTranslation();
-  const { profile, user } = useAuth();
+  const { profile, user, isGuest } = useAuth();
   const navigate = useNavigate();
   // ...
   const location = useLocation();
@@ -93,21 +93,30 @@ export default function Layout() {
         </div>
         
         <div className="relative">
-          <button 
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="relative w-11 h-11 rounded-[16px] overflow-hidden border border-black/10 shadow-premium hover:shadow-xl hover:rotate-3 hover:scale-110 transition-all active:scale-95 group z-[70] bg-white flex-shrink-0"
-          >
-            {profile?.avatar_url ? (
-              <img src={profile.avatar_url} alt="" className="w-full h-full object-cover group-hover:scale-110 transition-transform" />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center bg-brand-primary/5 text-brand-primary text-xs font-bold">
-                {profile?.full_name?.substring(0, 1) || 'U'}
-              </div>
-            )}
-            {hasUnread && (
-              <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border border-white animate-pulse shadow-sm z-10"></span>
-            )}
-          </button>
+          {(!user && isGuest) ? (
+            <button 
+              onClick={() => navigate('/login')}
+              className="bg-brand-primary text-white text-[10px] font-black px-6 py-2.5 rounded-full uppercase tracking-widest shadow-md shadow-brand-primary/20 hover:scale-105 active:scale-95 transition-all"
+            >
+              {t('common.signIn')}
+            </button>
+          ) : (
+            <button 
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="relative w-11 h-11 rounded-[16px] overflow-hidden border border-black/10 shadow-premium hover:shadow-xl hover:rotate-3 hover:scale-110 transition-all active:scale-95 group z-[70] bg-white flex-shrink-0"
+            >
+              {profile?.avatar_url ? (
+                <img src={profile.avatar_url} alt="" className="w-full h-full object-cover group-hover:scale-110 transition-transform" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center bg-brand-primary/5 text-brand-primary text-xs font-bold">
+                  {profile?.full_name?.substring(0, 1) || 'U'}
+                </div>
+              )}
+              {hasUnread && (
+                <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border border-white animate-pulse shadow-sm z-10"></span>
+              )}
+            </button>
+          )}
 
           {isMenuOpen && (
             <div className="absolute right-0 mt-4 w-64 bg-white/95 backdrop-blur-xl rounded-[32px] border border-black/5 shadow-2xl z-[70] p-2 overflow-hidden">

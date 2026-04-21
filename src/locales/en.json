@@ -3,7 +3,8 @@
   "common": {
     "readMore": "Read More",
     "showLess": "Show Less",
-    "back": "Back"
+    "back": "Back",
+    "signIn": "Sign In"
   },
   "nav": {
     "explore": "Explore",
@@ -51,12 +52,14 @@
     "showingLastKnown": "Showing deals from your last known location...",
     "errorLocationTitle": "Couldn't Get Location",
     "errorLocationDesc": "There was a problem getting your position. This can happen on slow connections or GPS timeouts.",
-    "errorFetchDeals": "Could not fetch deals in your area."
+    "errorFetchDeals": "Could not fetch deals in your area.",
+    "signInToClaim": "Please sign in to claim this coupon"
   },
   "login": {
     "welcome": "Welcome to",
     "subtitle": "Your radar for local deals",
     "signInGoogle": "Continue with Google",
+    "continueAsGuest": "Explore as a guest",
     "termsAgreed": "By continuing, you agree to our",
     "termsLink": "Terms of Use & Privacy Policy"
   },

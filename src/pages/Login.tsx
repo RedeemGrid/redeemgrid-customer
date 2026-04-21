@@ -1,13 +1,14 @@
 // @ts-nocheck
 import { useAuth } from '../context/AuthContext';
-import { Navigate, Link } from 'react-router-dom';
+import { Navigate, Link, useNavigate } from 'react-router-dom';
 import { Globe } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { availableLanguages } from '../i18n';
 
 export default function Login() {
   const { t, i18n } = useTranslation();
-  const { user, loading, loginWithGoogle } = useAuth();
+  const { user, loading, loginWithGoogle, setGuestMode, isGuest } = useAuth();
+  const navigate = useNavigate();
 
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center bg-bg-page text-text-muted font-black uppercase tracking-widest text-[10px] animate-pulse">Loading...</div>;
@@ -62,6 +63,16 @@ export default function Login() {
               className="w-6 h-6" 
             />
             {t('login.signInGoogle')}
+          </button>
+
+          <button
+            onClick={() => {
+              setGuestMode(true);
+              navigate('/');
+            }}
+            className="w-full mt-4 flex items-center justify-center gap-2 text-text-muted hover:text-brand-primary font-black text-[10px] uppercase tracking-[0.2em] py-4 transition-all"
+          >
+            {t('login.continueAsGuest')}
           </button>
         </div>
         <div className="bg-neutral-50 px-10 py-6 text-center text-[10px] text-text-muted border-t border-black/5 font-bold uppercase tracking-tighter">
