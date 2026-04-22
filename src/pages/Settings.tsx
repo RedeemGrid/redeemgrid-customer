@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { 
   ChevronLeft, HelpCircle, Globe, Map, Ruler, MapPin, 
   ShieldCheck, XCircle, CheckCircle2, ChevronDown, 
-  Bell, Clock, AlertTriangle, Star, Navigation2, ArrowRight
+  Bell, Clock, AlertTriangle, Star, Navigation2
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useState } from 'react';
@@ -358,7 +358,7 @@ export default function Settings() {
   );
 }
 
-function AccordionItem({ id, title, summary, icon, isOpen, onToggle, children }: { id: string, title: string, summary: string, icon: React.ReactNode, isOpen: boolean, onToggle: () => void, children: React.ReactNode }) {
+function AccordionItem({ title, summary, icon, isOpen, onToggle, children }: { title: string, summary: string, icon: React.ReactNode, isOpen: boolean, onToggle: () => void, children: React.ReactNode }) {
   return (
     <div className={`bg-white rounded-[40px] border transition-all duration-500 overflow-hidden ${isOpen ? 'border-brand-primary/20 shadow-premium' : 'border-black/5 shadow-sm'}`}>
       <button 
