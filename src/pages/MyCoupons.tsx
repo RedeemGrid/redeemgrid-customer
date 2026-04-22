@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/context/AuthContext';
 import { Ticket, Clock, CheckCircle, ChevronLeft, ScanLine, QrCode } from 'lucide-react';
@@ -29,24 +29,6 @@ export default function MyCoupons() {
     queryKey: ['user-coupons', user?.id],
     queryFn: () => CouponService.getUserCoupons(user!.id),
     enabled: !!user,
-    // After fetching, automatically open the coupon referenced by ?id= query param
-    select: (data) => {
-      const targetId = searchParams.get('id');
-      if (targetId) {
-        const target = data.find(c => c.id === targetId);
-        if (target) {
-          // Defer the state update to after the render cycle
-          setTimeout(() => {
-            setSelectedCoupon(target);
-            // Clean up the URL without re-triggering a render
-            const newParams = new URLSearchParams(searchParams);
-            newParams.delete('id');
-            setSearchParams(newParams, { replace: true });
-          }, 0);
-        }
-      }
-      return data;
-    },
   });
 
   // Invalidate and refetch when filter changes
@@ -71,6 +53,34 @@ export default function MyCoupons() {
     if (coupon.tenants?.id) fetchBranchesForCoupon(coupon.tenants.id);
     else setBranches([]);
   };
+
+  // Deep-link: open a specific coupon when ?id= is in the URL.
+  // Depends on searchParams so it fires both on fresh mount AND when
+  // the user is already on this page and navigates here from a notification.
+  const openedIdRef = useRef<string | null>(null);
+  useEffect(() => {
+    const targetId = searchParams.get('id');
+    // Guard: do nothing if no id, no coupons, or already opened this id
+    if (!targetId || coupons.length === 0 || openedIdRef.current === targetId) return;
+
+    const target = coupons.find(c => c.id === targetId);
+    if (!target) return;
+
+    // Mark as handled before any async/state calls to prevent double-open
+    openedIdRef.current = targetId;
+    handleSelectCoupon(target);
+
+    // Remove ?id= from URL after a tick so it doesn't interfere with the render
+    const timer = setTimeout(() => {
+      setSearchParams(prev => {
+        const next = new URLSearchParams(prev);
+        next.delete('id');
+        return next;
+      }, { replace: true });
+    }, 100);
+    return () => clearTimeout(timer);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams, coupons]);
 
   const now = new Date();
 

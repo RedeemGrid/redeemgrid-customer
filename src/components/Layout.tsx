@@ -11,9 +11,11 @@ import { supabase } from '../lib/supabase';
 import { useTranslation } from 'react-i18next';
 import OfflineOverlay from '@/components/OfflineOverlay';
 import ReloadPrompt from '@/components/ReloadPrompt';
+import { useNotificationWorker } from '@/hooks/useNotificationWorker';
 
 export default function Layout() {
   const { t } = useTranslation();
+  useNotificationWorker(); // Run the background worker for expiry checks
   const { profile, user, isGuest } = useAuth();
   const navigate = useNavigate();
   // ...

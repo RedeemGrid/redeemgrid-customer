@@ -35,6 +35,7 @@ export interface Coupon {
   qr_code: string;
   status: 'pending' | 'redeemed';
   created_at: string;
+  last_expiry_notified_at?: string;
   
   // Relations dynamically joined
   deals?: Deal;

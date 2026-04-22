@@ -38,8 +38,8 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
 function App() {
   return (
     <QueryProvider>
-      <PreferencesProvider>
-        <AuthProvider>
+      <AuthProvider>
+        <PreferencesProvider>
           <BrowserRouter basename={import.meta.env.BASE_URL}>
           <Routes>
             <Route path="/login" element={<Login />} />
@@ -65,8 +65,8 @@ function App() {
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </BrowserRouter>
-      </AuthProvider>
-    </PreferencesProvider>
+      </PreferencesProvider>
+    </AuthProvider>
   </QueryProvider>
 );
 }

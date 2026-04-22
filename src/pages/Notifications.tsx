@@ -14,6 +14,7 @@ interface AppNotification {
   type: string;
   is_read: boolean;
   created_at: string;
+  link?: string;
 }
 
 export default function Notifications() {
@@ -47,8 +48,10 @@ export default function Notifications() {
     }
   };
 
-  const markAsRead = async (id: string) => {
+  const markAsRead = async (id: string, link?: string) => {
     try {
+      if (link) navigate(link);
+      
       const { error } = await supabase
         .from('notifications')
         .update({ is_read: true })
@@ -135,7 +138,7 @@ export default function Notifications() {
           notifications.map((n) => (
             <div 
               key={n.id}
-              onClick={() => markAsRead(n.id)}
+              onClick={() => markAsRead(n.id, n.link)}
               className={`group relative overflow-hidden p-6 rounded-[32px] border transition-all flex gap-5 items-start cursor-pointer shadow-sm ${
                 n.is_read 
                 ? 'bg-neutral-50 border-black/5 opacity-60 grayscale-[0.3]' 

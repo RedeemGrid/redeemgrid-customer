@@ -77,6 +77,13 @@
   },
   "settings": {
     "title": "Settings",
+    "categories": {
+      "language": "Language & Region",
+      "discovery": "Discovery Experience",
+      "notifications": "Notifications",
+      "security": "Privacy & Permissions",
+      "support": "Help & Support"
+    },
     "preferences": "Preferences",
     "language": "Language",
     "support": "Help & Support",
@@ -86,7 +93,15 @@
     "distanceUnit": "Distance Unit",
     "kilometers": "Kilometers",
     "miles": "Miles",
-    "radiusValue": "{{val}} {{unit}}"
+    "radiusValue": "{{val}} {{unit}}",
+    "expiryWarning": "Expiration warning",
+    "expiryWarningDesc": "Get alerted before your coupons expire",
+    "warningTime": "Warning time",
+    "warningTimeValue": "{{val}} hours",
+    "favOffers": "Favorite offers",
+    "favOffersDesc": "Notify when my favorite businesses post deals",
+    "proximityAlerts": "Proximity alerts",
+    "proximityAlertsDesc": "Notify when near a deal from a favorite"
   },
   "terms": {
     "title": "Terms & Privacy",

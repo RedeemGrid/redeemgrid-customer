@@ -525,7 +525,7 @@ export default function Home() {
           imageUrl={selectedDeal.image_url}
           endDate={selectedDeal.end_date}
           category={selectedDeal.category}
-          branches={(dealBranches && dealBranches.length > 0) ? dealBranches : [{ branch_name: selectedDeal.branch_name }]}
+          branches={(dealBranches && dealBranches.length > 0) ? dealBranches : [{ id: 'fallback', branch_name: selectedDeal.branch_name }]}
           actionButtons={[
             {
               id: 'claim-btn',

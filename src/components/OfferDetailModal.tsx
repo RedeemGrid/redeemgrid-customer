@@ -260,9 +260,9 @@ export default function OfferDetailModal({
           {/* Action Buttons */}
           {actionButtons && actionButtons.length > 0 && (
             <div className="grid gap-3 mb-10">
-              {actionButtons.map(btn => (
+              {actionButtons.map((btn, idx) => (
                 <button 
-                  key={btn.id}
+                  key={btn.id || `btn-${idx}`}
                   onClick={btn.onClick}
                   disabled={btn.disabled || btn.loading}
                   className={`w-full font-black py-4 rounded-full transition-all active:scale-[0.98] flex items-center justify-center gap-3 text-sm uppercase tracking-[0.1em] ${
@@ -294,9 +294,9 @@ export default function OfferDetailModal({
               <ChevronDown size={20} className={`text-text-muted group-hover:text-text-main transition-transform ${isBranchesOpen ? 'rotate-180' : ''}`} />
             </button>
             <div className={`grid gap-3 overflow-hidden transition-all duration-300 ${isBranchesOpen ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0 pointer-events-none m-0'}`}>
-              {branches.length > 0 ? branches.map(branch => (
+              {branches.length > 0 ? branches.map((branch, idx) => (
                 <div 
-                  key={branch.id || branch.branch_id} 
+                  key={`branch-${branch.id || branch.branch_id || 'new'}-${idx}`} 
                   onClick={() => openInMaps(branch)}
                   className="bg-neutral-50 p-5 rounded-3xl flex items-center justify-between group hover:bg-neutral-100 transition-all border border-black/5 cursor-pointer active:scale-[0.98]"
                 >

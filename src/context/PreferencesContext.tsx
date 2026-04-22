@@ -1,14 +1,27 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
+import { useAuth } from './AuthContext';
+import { supabase } from '../lib/supabase';
 
 type DistanceUnit = 'km' | 'mi';
 
 interface PreferencesContextType {
+  // Discovery
   searchRadius: number;
   setSearchRadius: (val: number) => void;
   distanceUnit: DistanceUnit;
   setDistanceUnit: (unit: DistanceUnit) => void;
   radiusInMeters: number;
+  
+  // Notifications
+  notifExpiryEnabled: boolean;
+  setNotifExpiryEnabled: (val: boolean) => void;
+  notifExpiryHours: number;
+  setNotifExpiryHours: (val: number) => void;
+  notifFavOffersEnabled: boolean;
+  setNotifFavOffersEnabled: (val: boolean) => void;
+  notifProximityAlertsEnabled: boolean;
+  setNotifProximityAlertsEnabled: (val: boolean) => void;
 }
 
 const STORAGE_KEY = 'rg_user_preferences';
@@ -18,38 +31,70 @@ const DEFAULT_UNIT: DistanceUnit = 'km';
 const PreferencesContext = createContext<PreferencesContextType>({} as PreferencesContextType);
 
 export const PreferencesProvider = ({ children }: { children: ReactNode }) => {
-  const [searchRadius, setSearchRadius] = useState<number>(() => {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        return parsed.searchRadius ?? DEFAULT_RADIUS;
-      } catch {
-        return DEFAULT_RADIUS;
-      }
-    }
-    return DEFAULT_RADIUS;
-  });
+  const { user, profile } = useAuth();
+  
+  // Local state initialized from localStorage
+  const [searchRadius, setSearchRadius] = useState<number>(DEFAULT_RADIUS);
+  const [distanceUnit, setDistanceUnit] = useState<DistanceUnit>(DEFAULT_UNIT);
+  const [notifExpiryEnabled, setNotifExpiryEnabled] = useState(true);
+  const [notifExpiryHours, setNotifExpiryHours] = useState(24);
+  const [notifFavOffersEnabled, setNotifFavOffersEnabled] = useState(true);
+  const [notifProximityAlertsEnabled, setNotifProximityAlertsEnabled] = useState(false);
 
-  const [distanceUnit, setDistanceUnit] = useState<DistanceUnit>(() => {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        return parsed.distanceUnit ?? DEFAULT_UNIT;
-      } catch {
-        return DEFAULT_UNIT;
-      }
-    }
-    return DEFAULT_UNIT;
-  });
-
-  // Persist to localStorage whenever state changes
+  // Load from localStorage on mount
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ searchRadius, distanceUnit }));
-  }, [searchRadius, distanceUnit]);
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      try {
+        const p = JSON.parse(saved);
+        if (p.searchRadius) setSearchRadius(p.searchRadius);
+        if (p.distanceUnit) setDistanceUnit(p.distanceUnit);
+        if (p.notifExpiryEnabled !== undefined) setNotifExpiryEnabled(p.notifExpiryEnabled);
+        if (p.notifExpiryHours) setNotifExpiryHours(p.notifExpiryHours);
+        if (p.notifFavOffersEnabled !== undefined) setNotifFavOffersEnabled(p.notifFavOffersEnabled);
+        if (p.notifProximityAlertsEnabled !== undefined) setNotifProximityAlertsEnabled(p.notifProximityAlertsEnabled);
+      } catch (e) {
+        console.error('Error parsing preferences', e);
+      }
+    }
+  }, []);
 
-  // Derived value for API calls
+  // Sync with Profile if logged in
+  useEffect(() => {
+    if (profile) {
+      if (profile.notif_expiry_enabled !== undefined) setNotifExpiryEnabled(profile.notif_expiry_enabled);
+      if (profile.notif_expiry_hours) setNotifExpiryHours(profile.notif_expiry_hours);
+      if (profile.notif_fav_offers_enabled !== undefined) setNotifFavOffersEnabled(profile.notif_fav_offers_enabled);
+      if (profile.notif_proximity_alerts_enabled !== undefined) setNotifProximityAlertsEnabled(profile.notif_proximity_alerts_enabled);
+    }
+  }, [profile]);
+
+  // Persist to localStorage & Supabase
+  useEffect(() => {
+    const prefs = { 
+      searchRadius, 
+      distanceUnit, 
+      notifExpiryEnabled, 
+      notifExpiryHours, 
+      notifFavOffersEnabled, 
+      notifProximityAlertsEnabled 
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(prefs));
+
+    // Update Supabase if authenticated
+    if (user) {
+      const updateDb = async () => {
+        await supabase.from('profiles').update({
+          notif_expiry_enabled: notifExpiryEnabled,
+          notif_expiry_hours: notifExpiryHours,
+          notif_fav_offers_enabled: notifFavOffersEnabled,
+          notif_proximity_alerts_enabled: notifProximityAlertsEnabled
+        }).eq('id', user.id);
+      };
+      updateDb();
+    }
+  }, [searchRadius, distanceUnit, notifExpiryEnabled, notifExpiryHours, notifFavOffersEnabled, notifProximityAlertsEnabled, user]);
+
   const radiusInMeters = distanceUnit === 'mi' 
     ? Math.round(searchRadius * 1609.34)
     : searchRadius * 1000;
@@ -59,7 +104,15 @@ export const PreferencesProvider = ({ children }: { children: ReactNode }) => {
     setSearchRadius,
     distanceUnit,
     setDistanceUnit,
-    radiusInMeters
+    radiusInMeters,
+    notifExpiryEnabled,
+    setNotifExpiryEnabled,
+    notifExpiryHours,
+    setNotifExpiryHours,
+    notifFavOffersEnabled,
+    setNotifFavOffersEnabled,
+    notifProximityAlertsEnabled,
+    setNotifProximityAlertsEnabled
   };
 
   return (
