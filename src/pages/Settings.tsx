@@ -358,7 +358,7 @@ export default function Settings() {
   );
 }
 
-function AccordionItem({ title, summary, icon, isOpen, onToggle, children }: { title: string, summary: string, icon: React.ReactNode, isOpen: boolean, onToggle: () => void, children: React.ReactNode }) {
+function AccordionItem({ id: _id, title, summary, icon, isOpen, onToggle, children }: { id: string, title: string, summary: string, icon: React.ReactNode, isOpen: boolean, onToggle: () => void, children: React.ReactNode }) {
   return (
     <div className={`bg-white rounded-[40px] border transition-all duration-500 overflow-hidden ${isOpen ? 'border-brand-primary/20 shadow-premium' : 'border-black/5 shadow-sm'}`}>
       <button 
