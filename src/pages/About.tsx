@@ -23,10 +23,12 @@ export default function About() {
           <div className="absolute top-0 right-0 w-32 h-32 bg-brand-primary/5 blur-3xl rounded-full transition-all group-hover:scale-150"></div>
           
           <div className="relative z-10 text-center">
-            <div className="w-20 h-20 bg-brand-primary/5 rounded-[32px] flex items-center justify-center text-brand-primary shadow-premium border border-black/5 mx-auto mb-6 transform group-hover:rotate-6 group-hover:scale-110 transition-all duration-500">
-              <img src="favicon.svg" alt="Tróvea" className="w-12 h-12 object-contain" />
+            <div className="flex items-center justify-center gap-1 group mb-2 transform transition-all duration-500 hover:rotate-2">
+              <div className="w-12 h-12 rounded-xl overflow-hidden flex items-center justify-center shadow-lg border border-black/5">
+                <img src="favicon.svg" alt="T" className="w-full h-full object-cover scale-[1.25]" />
+              </div>
+              <h3 className="text-5xl font-black text-text-main tracking-tighter leading-none mt-1">róvea</h3>
             </div>
-            <h3 className="text-2xl font-black text-text-main mb-3">Tróvea</h3>
             <p className="text-text-muted text-sm leading-relaxed font-medium">
               {t('about.tagline')}
             </p>

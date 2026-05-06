@@ -84,14 +84,14 @@ export default function Layout() {
       )}
 
       <header className="bg-white/80 backdrop-blur-lg border-b border-black/5 flex items-center justify-between px-6 py-4 sticky top-0 z-[70]">
-        <div onClick={() => navigate('/')} className="cursor-pointer flex flex-col items-start gap-0.5 group">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center bg-brand-primary/10 group-hover:scale-110 transition-transform duration-300">
-              <img src="favicon.svg" alt="Tróvea Logo" className="w-full h-full object-cover" />
+        <div onClick={() => navigate('/')} className="cursor-pointer flex flex-col items-start group">
+          <div className="flex items-center gap-0.5">
+            <div className="w-8 h-8 rounded-[10px] overflow-hidden flex items-center justify-center shadow-sm group-hover:rotate-3 group-hover:scale-105 transition-all duration-300">
+              <img src="favicon.svg" alt="T" className="w-full h-full object-cover scale-[1.25]" />
             </div>
-            <h1 className="text-xl font-black text-text-main tracking-tight">Tróvea</h1>
+            <h1 className="text-2xl font-black text-text-main tracking-tighter leading-none mt-1">róvea</h1>
           </div>
-          <p className="text-[10px] font-bold text-brand-primary uppercase tracking-wider ml-10">{t('login.subtitle')}</p>
+          <p className="text-[8.5px] font-black text-brand-primary uppercase tracking-[0.15em] mt-1.5 opacity-80 pl-0.5">{t('login.subtitle')}</p>
         </div>
         
         <div className="relative">

@@ -47,11 +47,15 @@ export default function Login() {
 
       <div className="max-w-md w-full bg-white rounded-[40px] border border-black/5 shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-500 relative z-10">
         <div className="p-10 text-center">
-          <div className="mx-auto w-24 h-24 bg-brand-primary/5 rounded-[32px] flex items-center justify-center mb-8 border border-brand-primary/10 group animate-bounce-slow overflow-hidden">
-            <img src="favicon.svg" alt="Tróvea Logo" className="w-full h-full object-cover p-2" />
+          <div className="flex flex-col items-center justify-center mb-8">
+            <div className="flex items-center gap-1 group animate-bounce-slow">
+              <div className="w-14 h-14 rounded-[16px] overflow-hidden flex items-center justify-center shadow-md">
+                <img src="favicon.svg" alt="T" className="w-full h-full object-cover scale-[1.25]" />
+              </div>
+              <h1 className="text-6xl font-black text-text-main tracking-tighter leading-none mt-1">róvea</h1>
+            </div>
           </div>
-          <h1 className="text-4xl font-black text-text-main mb-3 tracking-tight">{t('login.welcome')} Tróvea</h1>
-          <p className="text-text-muted mb-10 font-medium">{t('login.subtitle')}</p>
+          <p className="text-text-muted mb-10 font-black tracking-widest uppercase text-xs pl-2">{t('login.subtitle')}</p>
           
           <button
             onClick={loginWithGoogle}
