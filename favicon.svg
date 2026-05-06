@@ -1,5 +1,42 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <circle cx="256" cy="256" r="240" fill="#007BFF" />
-  <path d="M150 380 V132 L362 380 V132" fill="none" stroke="white" stroke-width="48" stroke-linecap="round" stroke-linejoin="round" />
-  <path d="M100 400 Q256 350 412 400" fill="none" stroke="white" stroke-width="20" stroke-linecap="round" opacity="0.6" />
+  <defs>
+    <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#C9860F" />
+      <stop offset="100%" stop-color="#A66E0C" />
+    </linearGradient>
+    <filter id="dropShadow" x="-10%" y="-10%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-opacity="0.15" />
+    </filter>
+  </defs>
+  
+  <!-- Base Circle - Gold Gradient -->
+  <circle cx="256" cy="256" r="240" fill="url(#goldGradient)" filter="url(#dropShadow)" />
+  
+  <!-- The 'T' of Tróvea (Replacing the old N) -->
+  <path 
+    d="M160 180 h192 M256 180 v180" 
+    fill="none" 
+    stroke="white" 
+    stroke-width="56" 
+    stroke-linecap="round" 
+    stroke-linejoin="round" 
+  />
+  
+  <!-- Central Discovery Star / Sparkle overlaying the T -->
+  <path 
+    d="M256,180 L270,230 L320,240 L282,275 L296,325 L256,290 L216,325 L230,275 L192,240 L242,230 Z" 
+    fill="white" 
+    opacity="0.95" 
+    transform="scale(0.8) translate(64, 30)"
+  />
+  
+  <!-- Subtle Wave (Dynamic element) -->
+  <path 
+    d="M100 400 Q256 350 412 400" 
+    fill="none" 
+    stroke="white" 
+    stroke-width="20" 
+    stroke-linecap="round" 
+    opacity="0.4" 
+  />
 </svg>
