@@ -87,9 +87,9 @@ export default function Layout() {
         <div onClick={() => navigate('/')} className="cursor-pointer flex flex-col items-start gap-0.5 group">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center bg-brand-primary/10 group-hover:scale-110 transition-transform duration-300">
-              <img src="pwa-192x192.png" alt="Nabbu Logo" className="w-full h-full object-cover" />
+              <img src="favicon.svg" alt="Tróvea Logo" className="w-full h-full object-cover" />
             </div>
-            <h1 className="text-xl font-black text-text-main tracking-tight">Nabbu</h1>
+            <h1 className="text-xl font-black text-text-main tracking-tight">Tróvea</h1>
           </div>
           <p className="text-[10px] font-bold text-brand-primary uppercase tracking-wider ml-10">{t('login.subtitle')}</p>
         </div>

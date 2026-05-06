@@ -1,9 +1,9 @@
 @import "tailwindcss";
 
 @theme {
-  /* Brand */
-  --color-brand-primary: #007BFF;
-  --color-brand-secondary: #00C853;
+  /* Brand (Tróvea - Accessible Gold & Olive) */
+  --color-brand-primary: #B7790E;
+  --color-brand-secondary: #6B8E23;
 
   /* Backgrounds */
   --color-bg-page: #F0F2F5;
@@ -21,8 +21,8 @@
   --color-status-warning-bg: #FFFBEB;
   --color-status-error: #EF4444;
   --color-status-error-bg: #FEF2F2;
-  --color-status-info: #007BFF;
-  --color-status-info-bg: #EFF6FF;
+  --color-status-info: #B7790E;
+  --color-status-info-bg: #FEF7E8;
 }
 
 

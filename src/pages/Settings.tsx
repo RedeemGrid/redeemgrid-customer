@@ -324,7 +324,7 @@ export default function Settings() {
                 </div>
                 <div>
                   <p className="font-black text-sm text-text-main">{t('terms.title')}</p>
-                  <p className="text-text-muted text-[10px] font-bold mt-0.5">Nabbu Policy</p>
+                  <p className="text-text-muted text-[10px] font-bold mt-0.5">Tróvea Policy</p>
                 </div>
               </div>
               <ChevronLeft size={18} className="rotate-180 text-text-muted/30 transition-colors" />

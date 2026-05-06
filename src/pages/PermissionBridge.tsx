@@ -95,7 +95,7 @@ export default function PermissionBridge() {
         )}
 
         <footer className="text-center pt-8 opacity-40">
-           <p className="text-[10px] font-black uppercase tracking-[0.2em]">Nabbu Control Center</p>
+           <p className="text-[10px] font-black uppercase tracking-[0.2em]">Tróvea Control Center</p>
         </footer>
       </div>
     </div>

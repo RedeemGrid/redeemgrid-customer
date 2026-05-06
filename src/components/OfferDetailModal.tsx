@@ -160,7 +160,7 @@ export default function OfferDetailModal({
               placeholder={
                 <div className="w-full h-full bg-gradient-to-br from-neutral-50 to-neutral-100 flex flex-col items-center justify-center text-neutral-300">
                   <Tag size={64} strokeWidth={1} className="opacity-10 mb-2" />
-                  <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-20">Nabbu Deal</p>
+                  <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-20">Tróvea Deal</p>
                 </div>
               }
             />
@@ -178,7 +178,7 @@ export default function OfferDetailModal({
                 ) : (
                   <div className="flex items-center gap-2">
                     <Tag size={14} className="text-brand-primary" />
-                    <span className="text-xs font-black text-brand-primary uppercase tracking-tighter">Nabbu</span>
+                    <span className="text-xs font-black text-brand-primary uppercase tracking-tighter">Tróvea</span>
                   </div>
                 )}
               </div>
@@ -187,7 +187,7 @@ export default function OfferDetailModal({
             {/* Floating Category Badge */}
             <div className="absolute top-6 right-6 z-10">
               <div className="bg-brand-primary text-white text-[10px] font-black px-4 py-2 rounded-full uppercase tracking-widest shadow-lg shadow-brand-primary/20">
-                {category ? (t(`db_categories.${category.charAt(0).toUpperCase() + category.slice(1).toLowerCase()}`) || category) : 'Nabbu'}
+                {category ? (t(`db_categories.${category.charAt(0).toUpperCase() + category.slice(1).toLowerCase()}`) || category) : 'Tróvea'}
               </div>
             </div>
           </div>

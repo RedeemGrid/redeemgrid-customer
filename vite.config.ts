@@ -23,14 +23,14 @@ export default defineConfig({
       injectRegister: 'auto',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
       manifest: {
-        name: 'Nabbu Customer',
-        short_name: 'Nabbu',
-        description: 'Redeem your local rewards seamlessly.',
+        name: 'Tróvea',
+        short_name: 'Tróvea',
+        description: 'Discover the best local offers near you',
         start_url: '/redeemgrid-customer/',
         scope: '/redeemgrid-customer/',
         display: 'standalone',
-        background_color: '#0c0a09',
-        theme_color: '#059669',
+        background_color: '#F0F2F5',
+        theme_color: '#C9860F',
         orientation: 'portrait',
         icons: [
           {

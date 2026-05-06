@@ -60,7 +60,7 @@ const DealCard = ({ deal, isClaimed, onClick, t }: DealCardProps) => {
           placeholder={
             <div className="w-full h-full bg-gradient-to-br from-neutral-50 to-neutral-100 flex flex-col items-center justify-center text-neutral-300">
               <Tag size={40} strokeWidth={1} className="opacity-20 mb-2" />
-              <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-30">Nabbu</p>
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-30">Tróvea</p>
             </div>
           }
         />
@@ -77,7 +77,7 @@ const DealCard = ({ deal, isClaimed, onClick, t }: DealCardProps) => {
             ) : (
               <div className="flex items-center gap-1.5">
                 <Tag size={12} className="text-brand-primary" />
-                <span className="text-[10px] font-black text-brand-primary uppercase tracking-tighter">Nabbu</span>
+                <span className="text-[10px] font-black text-brand-primary uppercase tracking-tighter">Tróvea</span>
               </div>
             )}
           </div>
